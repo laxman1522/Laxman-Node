@@ -1,13 +1,12 @@
-import buddyController from "./controllers/buddyController";
 import fileService from "./services/fileService";
 const express = require('express');
 const { appConstants } = require('./constants/appConstants');
+const logger = require('../src/logger');
+const cors = require('cors')
 
 const app = express();
 
 app.use(express.json());
-
-const buddiesController =  new buddyController();
 
 const PORT = appConstants.PORT;
 
@@ -18,18 +17,15 @@ const file = new fileService();
 
 file.fileCreation(fileName,fileContent);
 
-app.get('/buddies',async (req: Request,res: Response) => {
-    await buddiesController.getBuddiesData(req,res);
-});
-app.get('/buddy/:id', async (req: Request,res: Response) => {
-    await buddiesController.getBuddyData(req,res);
-});
-app.post('/buddy',async (req: Request,res: Response) => {
-    await buddiesController.addBuddyDetails(req,res);
-});
-app.put('/buddy',async (req: Request,res: Response) => {
-    await buddiesController.updateBuddyDetails(req,res);
-})
+app.use(cors({
+    origin: '*', 
+  }));
 
+const buddyRoute = require('./routes/buddy');
 
-app.listen(PORT);
+app.use('/buddy', buddyRoute);
+app.use('/buddies', buddyRoute);
+
+app.listen(PORT, () => {
+    logger.info(`App started in ${PORT}`);
+});

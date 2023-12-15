@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const commonService_1 = __importDefault(require("./commonService"));
 const fs = require('fs');
 const { appConstants } = require('../constants/appConstants');
+const logger = require('../logger');
 class buddyService {
     getBuddiesDetails(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -22,8 +23,9 @@ class buddyService {
                 const filePath = appConstants.FILE_PATH;
                 fs.readFile(filePath, (err, data) => {
                     if (err) {
+                        logger.error(appConstants.FILE_ERROR);
                         res.writeHead(500, { 'Content-Type': 'text/plain' });
-                        res.end('Internal Server Error');
+                        res.end(appConstants.INTERNAL_SERVER_ERROR);
                     }
                     else {
                         res.writeHead(200, { 'Content-Type': 'text/plain' });
@@ -32,6 +34,7 @@ class buddyService {
                 });
             }
             catch (error) {
+                logger.error(error);
                 res.end(error);
             }
         });
@@ -45,19 +48,23 @@ class buddyService {
                 fs.readFile(filePath, (err, data) => {
                     if (err) {
                         res.writeHead(500, { 'Content-Type': 'text/plain' });
-                        res.end('Internal Server Error');
+                        res.end(appConstants.INTERNAL_SERVER_ERROR);
                     }
                     else {
-                        res.writeHead(200, { 'Content-Type': 'text/plain' });
                         const fileData = JSON.parse(data);
                         for (let buddyData of fileData) {
-                            (buddyData === null || buddyData === void 0 ? void 0 : buddyData.employeeId) === buddyId && res.end(JSON.stringify(buddyData));
+                            if ((buddyData === null || buddyData === void 0 ? void 0 : buddyData.employeeId) === buddyId) {
+                                res.writeHead(200, { 'Content-Type': 'text/plain' });
+                                res.end(JSON.stringify(buddyData));
+                            }
                         }
+                        res.writeHead(404, { 'Content-Type': 'text/plain' });
                         res.end(appConstants === null || appConstants === void 0 ? void 0 : appConstants.NO_DATA_FOUND);
                     }
                 });
             }
             catch (error) {
+                logger.error(error);
                 res.end(error);
             }
         });
@@ -76,6 +83,7 @@ class buddyService {
                     fs.readFile(filePath, (err, data) => {
                         var _a, _b, _c, _d, _e;
                         if (err) {
+                            logger.error(err);
                             res.writeHead(500, { 'Content-Type': 'text/plain' });
                             res.end(appConstants === null || appConstants === void 0 ? void 0 : appConstants.INTERNAL_SERVER_ERROR);
                         }
@@ -89,6 +97,63 @@ class buddyService {
                                 dob: (_d = req === null || req === void 0 ? void 0 : req.body) === null || _d === void 0 ? void 0 : _d.dob,
                                 hobbies: (_e = req === null || req === void 0 ? void 0 : req.body) === null || _e === void 0 ? void 0 : _e.hobbies
                             });
+                            const updatedBuddiesData = JSON.stringify(existingBuddiesData);
+                            fs.writeFile(filePath, updatedBuddiesData, 'utf8', (err) => {
+                                if (err) {
+                                    res.writeHead(500, { 'Content-Type': 'text/plain' });
+                                    res.end(err);
+                                    return;
+                                }
+                                res.end(updatedBuddiesData);
+                            });
+                        }
+                    });
+                }
+                else {
+                    res.writeHead(400, { 'Content-Type': 'text/plain' });
+                    res.end(appConstants === null || appConstants === void 0 ? void 0 : appConstants.BAD_REQUEST);
+                }
+            }
+            catch (error) {
+                logger.error(error);
+                res.end(error);
+            }
+        });
+    }
+    updateBuddyDetails(req, res) {
+        var _a, _b, _c, _d, _e;
+        return __awaiter(this, void 0, void 0, function* () {
+            let isValidRequest = true;
+            const updatedData = {
+                employeeId: (_a = req === null || req === void 0 ? void 0 : req.body) === null || _a === void 0 ? void 0 : _a.employeeId,
+                realName: (_b = req === null || req === void 0 ? void 0 : req.body) === null || _b === void 0 ? void 0 : _b.realName,
+                nickName: (_c = req === null || req === void 0 ? void 0 : req.body) === null || _c === void 0 ? void 0 : _c.nickName,
+                dob: (_d = req === null || req === void 0 ? void 0 : req.body) === null || _d === void 0 ? void 0 : _d.dob,
+                hobbies: (_e = req === null || req === void 0 ? void 0 : req.body) === null || _e === void 0 ? void 0 : _e.hobbies,
+            };
+            const common = new commonService_1.default();
+            if ((updatedData === null || updatedData === void 0 ? void 0 : updatedData.dob) && !common.isDateValid(req === null || req === void 0 ? void 0 : req.body[appConstants === null || appConstants === void 0 ? void 0 : appConstants.DOB])) {
+                isValidRequest = false;
+            }
+            const buddyKeys = appConstants === null || appConstants === void 0 ? void 0 : appConstants.BUDDY_KEYS;
+            try {
+                if (isValidRequest) {
+                    const filePath = appConstants === null || appConstants === void 0 ? void 0 : appConstants.FILE_PATH;
+                    fs.readFile(filePath, (err, data) => {
+                        if (err) {
+                            res.writeHead(500, { 'Content-Type': 'text/plain' });
+                            res.end(appConstants === null || appConstants === void 0 ? void 0 : appConstants.INTERNAL_SERVER_ERROR);
+                        }
+                        else {
+                            res.writeHead(200, { 'Content-Type': 'text/plain' });
+                            const existingBuddiesData = JSON.parse(data);
+                            for (let buddyData of existingBuddiesData) {
+                                if ((buddyData === null || buddyData === void 0 ? void 0 : buddyData.employeeId) === (updatedData === null || updatedData === void 0 ? void 0 : updatedData.employeeId)) {
+                                    for (let key of buddyKeys) {
+                                        updatedData[key] && (buddyData[key] = updatedData[key]);
+                                    }
+                                }
+                            }
                             const updatedBuddiesData = JSON.stringify(existingBuddiesData);
                             fs.writeFile(filePath, updatedBuddiesData, 'utf8', (err) => {
                                 if (err) {
@@ -106,50 +171,7 @@ class buddyService {
                 }
             }
             catch (error) {
-                res.end(error);
-            }
-        });
-    }
-    updateBuddyDetails(req, res) {
-        var _a, _b, _c, _d, _e;
-        return __awaiter(this, void 0, void 0, function* () {
-            const updatedData = {
-                employeeId: (_a = req === null || req === void 0 ? void 0 : req.body) === null || _a === void 0 ? void 0 : _a.employeeId,
-                realName: (_b = req === null || req === void 0 ? void 0 : req.body) === null || _b === void 0 ? void 0 : _b.realName,
-                nickName: (_c = req === null || req === void 0 ? void 0 : req.body) === null || _c === void 0 ? void 0 : _c.nickName,
-                dob: (_d = req === null || req === void 0 ? void 0 : req.body) === null || _d === void 0 ? void 0 : _d.dob,
-                hobbies: (_e = req === null || req === void 0 ? void 0 : req.body) === null || _e === void 0 ? void 0 : _e.hobbies,
-            };
-            const buddyKeys = appConstants === null || appConstants === void 0 ? void 0 : appConstants.BUDDY_KEYS;
-            try {
-                const filePath = appConstants === null || appConstants === void 0 ? void 0 : appConstants.FILE_PATH;
-                fs.readFile(filePath, (err, data) => {
-                    if (err) {
-                        res.writeHead(500, { 'Content-Type': 'text/plain' });
-                        res.end(appConstants === null || appConstants === void 0 ? void 0 : appConstants.INTERNAL_SERVER_ERROR);
-                    }
-                    else {
-                        res.writeHead(200, { 'Content-Type': 'text/plain' });
-                        const existingBuddiesData = JSON.parse(data);
-                        for (let buddyData of existingBuddiesData) {
-                            if ((buddyData === null || buddyData === void 0 ? void 0 : buddyData.employeeId) === (updatedData === null || updatedData === void 0 ? void 0 : updatedData.employeeId)) {
-                                for (let key of buddyKeys) {
-                                    updatedData[key] && (buddyData[key] = updatedData[key]);
-                                }
-                            }
-                        }
-                        const updatedBuddiesData = JSON.stringify(existingBuddiesData);
-                        fs.writeFile(filePath, updatedBuddiesData, 'utf8', (err) => {
-                            if (err) {
-                                res.end(err);
-                                return;
-                            }
-                            res.end(updatedBuddiesData);
-                        });
-                    }
-                });
-            }
-            catch (error) {
+                logger.error(error);
                 res.end(error);
             }
         });

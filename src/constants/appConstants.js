@@ -6,7 +6,10 @@ const appConstants = {
     BUDDY_KEYS: ["employeeId","realName","nickName","dob","hobbies"],
     DOB: 'dob',
     INTERNAL_SERVER_ERROR: 'Internal Server Error',
-    BAD_REQUEST: 'Bad Request'
+    BAD_REQUEST: 'Bad Request',
+    FILE_CREATED: 'File created successfully',
+    FILE_EXIST: 'File already exist',
+    FILE_ERROR: 'Error reading file'
 }
 
 module.exports.appConstants = appConstants;
