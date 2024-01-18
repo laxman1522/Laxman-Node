@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require('fs');
-const { appConstants } = require('../constants/appConstants');
-const logger = require('../logger');
+const { appConstants } = require('../../constants/appConstants');
+const logger = require('../../logger');
 class fileCreationService {
     fileCreation(fileName, fileContent) {
         fs.access(appConstants.FILE_PATH, fs.constants.F_OK, (err) => {

@@ -1,17 +1,19 @@
-import fileService from "./services/fileService";
+import fileService from "./services/FileService/fileService";
+import { Express } from "express";
+const dotenv = require("dotenv");
 const express = require('express');
 const { appConstants } = require('./constants/appConstants');
+const {routeConstants} = require('./constants/routeConstants');
 const logger = require('../src/logger');
-const cors = require('cors')
+const cors = require('cors');
+const buddyRoute = require('./routes/Buddy/buddy');
 
-const app = express();
-
+dotenv.config();
+const app : Express = express();
 app.use(express.json());
 
-const PORT = appConstants.PORT;
-
-const fileName = appConstants.FILE_PATH;
-const fileContent = appConstants.FILE_CONTENT;
+const fileName: string = appConstants.FILE_PATH;
+const fileContent: any = appConstants.FILE_CONTENT;
 
 const file = new fileService();
 
@@ -19,13 +21,14 @@ file.fileCreation(fileName,fileContent);
 
 app.use(cors({
     origin: '*', 
-  }));
+}));
 
-const buddyRoute = require('./routes/buddy');
+app.use(routeConstants.BUDDY_ROUTES.BUDDY, buddyRoute);
 
-app.use('/buddy', buddyRoute);
-app.use('/buddies', buddyRoute);
+app.listen(process.env.PORT, () => {
+    logger.info(`App started in ${process.env.PORT}`);
+});
 
-app.listen(PORT, () => {
-    logger.info(`App started in ${PORT}`);
+app.listen(3002, () => {
+    logger.info(`App started in 3002`);
 });

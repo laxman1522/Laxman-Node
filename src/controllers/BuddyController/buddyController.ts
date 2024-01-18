@@ -1,4 +1,4 @@
-import buddyService from "../services/buddyService";
+import buddyService from "../../services/BuddyService/buddyService";
 
 export default class buddyController {
     private buddyService: any;

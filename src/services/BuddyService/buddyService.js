@@ -8,14 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const commonService_1 = __importDefault(require("./commonService"));
+const helperUtil = require('../../utils/helper');
 const fs = require('fs');
-const { appConstants } = require('../constants/appConstants');
-const logger = require('../logger');
+const { appConstants } = require('../../constants/appConstants');
+const logger = require('../../logger');
 class buddyService {
     getBuddiesDetails(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -25,17 +22,21 @@ class buddyService {
                     if (err) {
                         logger.error(appConstants.FILE_ERROR);
                         res.writeHead(500, { 'Content-Type': 'text/plain' });
-                        res.end(appConstants.INTERNAL_SERVER_ERROR);
+                        res.write(appConstants.INTERNAL_SERVER_ERROR);
+                        res.end();
                     }
                     else {
                         res.writeHead(200, { 'Content-Type': 'text/plain' });
-                        res.end(data);
+                        res.write(data);
+                        res.end();
                     }
                 });
             }
             catch (error) {
                 logger.error(error);
-                res.end(error);
+                res.writeHead(500, { 'Content-Type': 'text/plain' });
+                res.write(error);
+                res.end();
             }
         });
     }
@@ -48,24 +49,30 @@ class buddyService {
                 fs.readFile(filePath, (err, data) => {
                     if (err) {
                         res.writeHead(500, { 'Content-Type': 'text/plain' });
-                        res.end(appConstants.INTERNAL_SERVER_ERROR);
+                        res.write(appConstants.INTERNAL_SERVER_ERROR);
+                        res.end();
                     }
                     else {
                         const fileData = JSON.parse(data);
                         for (let buddyData of fileData) {
                             if ((buddyData === null || buddyData === void 0 ? void 0 : buddyData.employeeId) === buddyId) {
                                 res.writeHead(200, { 'Content-Type': 'text/plain' });
-                                res.end(JSON.stringify(buddyData));
+                                res.write(JSON.stringify(buddyData));
+                                res.end();
+                                return;
                             }
                         }
                         res.writeHead(404, { 'Content-Type': 'text/plain' });
-                        res.end(appConstants === null || appConstants === void 0 ? void 0 : appConstants.NO_DATA_FOUND);
+                        res.write(appConstants === null || appConstants === void 0 ? void 0 : appConstants.NO_DATA_FOUND);
+                        res.end();
                     }
                 });
             }
             catch (error) {
                 logger.error(error);
-                res.end(error);
+                res.writeHead(500, { 'Content-Type': 'text/plain' });
+                res.write(error);
+                res.end();
             }
         });
     }
@@ -75,8 +82,7 @@ class buddyService {
             for (let key of appConstants.BUDDY_KEYS) {
                 ((req === null || req === void 0 ? void 0 : req.body[key]) === undefined) && (isValidRequest = false);
             }
-            const common = new commonService_1.default();
-            !common.isDateValid(req === null || req === void 0 ? void 0 : req.body[appConstants === null || appConstants === void 0 ? void 0 : appConstants.DOB]) && (isValidRequest = false);
+            !helperUtil.isValidDate(req === null || req === void 0 ? void 0 : req.body[appConstants === null || appConstants === void 0 ? void 0 : appConstants.DOB]) && (isValidRequest = false);
             try {
                 if (isValidRequest) {
                     const filePath = appConstants === null || appConstants === void 0 ? void 0 : appConstants.FILE_PATH;
@@ -85,10 +91,10 @@ class buddyService {
                         if (err) {
                             logger.error(err);
                             res.writeHead(500, { 'Content-Type': 'text/plain' });
-                            res.end(appConstants === null || appConstants === void 0 ? void 0 : appConstants.INTERNAL_SERVER_ERROR);
+                            res.write(appConstants === null || appConstants === void 0 ? void 0 : appConstants.INTERNAL_SERVER_ERROR);
+                            res.end();
                         }
                         else {
-                            res.writeHead(200, { 'Content-Type': 'text/plain' });
                             const existingBuddiesData = JSON.parse(data);
                             existingBuddiesData.push({
                                 employeeId: (_a = req === null || req === void 0 ? void 0 : req.body) === null || _a === void 0 ? void 0 : _a.employeeId,
@@ -101,22 +107,29 @@ class buddyService {
                             fs.writeFile(filePath, updatedBuddiesData, 'utf8', (err) => {
                                 if (err) {
                                     res.writeHead(500, { 'Content-Type': 'text/plain' });
-                                    res.end(err);
+                                    res.write(err);
+                                    res.end();
                                     return;
                                 }
-                                res.end(updatedBuddiesData);
+                                logger.info(appConstants.ADDED_SUCCESSFULLY);
+                                res.writeHead(200, { 'Content-Type': 'text/plain' });
+                                res.write(JSON.stringify({ message: appConstants.ADDED_SUCCESSFULLY }));
+                                res.end();
                             });
                         }
                     });
                 }
                 else {
                     res.writeHead(400, { 'Content-Type': 'text/plain' });
-                    res.end(appConstants === null || appConstants === void 0 ? void 0 : appConstants.BAD_REQUEST);
+                    res.write(appConstants === null || appConstants === void 0 ? void 0 : appConstants.BAD_REQUEST);
+                    res.end();
                 }
             }
             catch (error) {
                 logger.error(error);
-                res.end(error);
+                res.writeHead(500, { 'Content-Type': 'text/plain' });
+                res.write(error);
+                res.end();
             }
         });
     }
@@ -131,8 +144,7 @@ class buddyService {
                 dob: (_d = req === null || req === void 0 ? void 0 : req.body) === null || _d === void 0 ? void 0 : _d.dob,
                 hobbies: (_e = req === null || req === void 0 ? void 0 : req.body) === null || _e === void 0 ? void 0 : _e.hobbies,
             };
-            const common = new commonService_1.default();
-            if ((updatedData === null || updatedData === void 0 ? void 0 : updatedData.dob) && !common.isDateValid(req === null || req === void 0 ? void 0 : req.body[appConstants === null || appConstants === void 0 ? void 0 : appConstants.DOB])) {
+            if ((updatedData === null || updatedData === void 0 ? void 0 : updatedData.dob) && !helperUtil.isValidDate(req === null || req === void 0 ? void 0 : req.body[appConstants === null || appConstants === void 0 ? void 0 : appConstants.DOB])) {
                 isValidRequest = false;
             }
             const buddyKeys = appConstants === null || appConstants === void 0 ? void 0 : appConstants.BUDDY_KEYS;
@@ -142,10 +154,10 @@ class buddyService {
                     fs.readFile(filePath, (err, data) => {
                         if (err) {
                             res.writeHead(500, { 'Content-Type': 'text/plain' });
-                            res.end(appConstants === null || appConstants === void 0 ? void 0 : appConstants.INTERNAL_SERVER_ERROR);
+                            res.write(appConstants === null || appConstants === void 0 ? void 0 : appConstants.INTERNAL_SERVER_ERROR);
+                            res.end();
                         }
                         else {
-                            res.writeHead(200, { 'Content-Type': 'text/plain' });
                             const existingBuddiesData = JSON.parse(data);
                             for (let buddyData of existingBuddiesData) {
                                 if ((buddyData === null || buddyData === void 0 ? void 0 : buddyData.employeeId) === (updatedData === null || updatedData === void 0 ? void 0 : updatedData.employeeId)) {
@@ -157,22 +169,29 @@ class buddyService {
                             const updatedBuddiesData = JSON.stringify(existingBuddiesData);
                             fs.writeFile(filePath, updatedBuddiesData, 'utf8', (err) => {
                                 if (err) {
-                                    res.end(err);
-                                    return;
+                                    res.writeHead(500, { 'Content-Type': 'text/plain' });
+                                    res.write(err);
+                                    res.end();
                                 }
-                                res.end(updatedBuddiesData);
+                                logger.info(appConstants.UPDATED_SUCCESSFULLY);
+                                res.writeHead(200, { 'Content-Type': 'text/plain' });
+                                res.write(JSON.stringify({ message: appConstants.UPDATED_SUCCESSFULLY }));
+                                res.end();
                             });
                         }
                     });
                 }
                 else {
                     res.writeHead(400, { 'Content-Type': 'text/plain' });
-                    res.end(appConstants === null || appConstants === void 0 ? void 0 : appConstants.BAD_REQUEST);
+                    res.write(appConstants === null || appConstants === void 0 ? void 0 : appConstants.BAD_REQUEST);
+                    res.end();
                 }
             }
             catch (error) {
                 logger.error(error);
-                res.end(error);
+                res.writeHead(500, { 'Content-Type': 'text/plain' });
+                res.write(error);
+                res.end();
             }
         });
     }

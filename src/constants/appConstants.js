@@ -9,7 +9,9 @@ const appConstants = {
     BAD_REQUEST: 'Bad Request',
     FILE_CREATED: 'File created successfully',
     FILE_EXIST: 'File already exist',
-    FILE_ERROR: 'Error reading file'
+    FILE_ERROR: 'Error reading file',
+    UPDATED_SUCCESSFULLY: 'Updated Successfully',
+    ADDED_SUCCESSFULLY: 'Added Successfully'
 }
 
 module.exports.appConstants = appConstants;

@@ -12,20 +12,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const buddyController_1 = __importDefault(require("../controllers/buddyController"));
+const buddyController_1 = __importDefault(require("../../controllers/BuddyController/buddyController"));
+const { routeConstants } = require('../../constants/routeConstants');
 const express = require('express');
 const router = express.Router();
 const buddiesController = new buddyController_1.default();
-router.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get(routeConstants.BUDDY_ROUTES.ALL, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield buddiesController.getBuddiesData(req, res);
 }));
-router.get('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get(routeConstants.BUDDY_ROUTES.ID, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield buddiesController.getBuddyData(req, res);
 }));
-router.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.post(routeConstants.GENERAL, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield buddiesController.addBuddyDetails(req, res);
 }));
-router.put('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.put(routeConstants.GENERAL, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     yield buddiesController.updateBuddyDetails(req, res);
 }));
 module.exports = router;

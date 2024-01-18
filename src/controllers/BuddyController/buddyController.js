@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const buddyService_1 = __importDefault(require("../services/buddyService"));
+const buddyService_1 = __importDefault(require("../../services/BuddyService/buddyService"));
 class buddyController {
     constructor() {
         this.buddyService = new buddyService_1.default();
