@@ -13,14 +13,25 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const userController_1 = __importDefault(require("../../controller/userController/userController"));
+const taskController_1 = __importDefault(require("../../controller/taskController/taskController"));
 const routeConstants = require('../../constants/routeConstants');
 const express = require('express');
-const router = express.Router();
+const TaskRoute = express.Router();
 const userController = (0, userController_1.default)();
-router.post(routeConstants.SIGNUP, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    userController.createUser(req, res);
+const taskController = (0, taskController_1.default)();
+TaskRoute.post('', userController.verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield taskController.createTask(req, res);
 }));
-router.post(routeConstants.LOGIN, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    userController.login(req, res);
+TaskRoute.get('', userController.verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield taskController.fetchTask(req, res);
 }));
-exports.default = router;
+TaskRoute.get(routeConstants.TASK_ID, userController.verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield taskController.fetchTask(req, res);
+}));
+TaskRoute.patch(routeConstants.TASK_ID, userController.verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield taskController.updateTask(req, res);
+}));
+TaskRoute.delete(routeConstants.TASK_ID, userController.verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    yield taskController.deleteTask(req, res);
+}));
+exports.default = TaskRoute;

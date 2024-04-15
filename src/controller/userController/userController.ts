@@ -1,37 +1,29 @@
-import logger from "../../logger/logger"
-import bcrypt from "bcrypt";
-import fs from 'fs';
-import { Express, Request, Response } from "express";
+import { Request, Response } from "express";
 import UserService from "../../services/userService/userService";
-const jwt = require("jsonWebToken");
-const dotenv = require("dotenv");
+import { AppConstants } from "../../constants/appConstants/appConstants";
+import logger from "../../logger/logger";
 
 const userService = UserService();
 
 const UserController: any = () => {
 
     const createUser = async (req: Request,res: Response) => {
-      try {
-        userService.createUser(req,res);
-      } catch (err) {
-        res.status(500).json("Internal Server Error");
-      }
+      logger.info(AppConstants.CREATE_USER.CONTROLLER);
+      await userService.createUser(req,res);
     }
 
     const login = async (req: Request,res: Response) => {
-      try {
-        userService.login(req,res);
-      } catch (err) {
-        res.status(500).json("Internal Server Error");
-      }
+      await userService.login(req,res);
     }
 
-    const verifyToken = (req: any, res: any, next: any) => {
-      try {
-        userService.verifyToken(req,res,next);
-      } catch (err) {
-        res.status(500).json("Internal Server Error");
-      }
+    /**
+     * Controller responsible for verifying the access token
+     * @param req 
+     * @param res 
+     * @param next 
+     */
+    const verifyToken = async (req: any, res: any, next: any) => {
+      await userService.verifyToken(req,res,next);
     };
 
     return {createUser, login, verifyToken};

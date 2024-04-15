@@ -1,7 +1,5 @@
-
-import fs from 'fs';
+import { AppConstants } from '../../constants/appConstants/appConstants';
 import logger from '../../logger/logger';
-import isValidDate from '../../utils/helper';
 import TaskService from '../../services/taskService/taskService';
 
 const taskService = TaskService();
@@ -9,43 +7,27 @@ const taskService = TaskService();
 const TaskController: any = () => {
 
     const createTask = (req: any, res: any) => {
-      try {
+        logger.info(AppConstants.CREATE_TASK.CONTROLLER);
         taskService.createTask(req,res);
-      } catch(err) {
-        res.status(500).json("Internal Server error");
-      } 
     }
 
-    const fetchTask = (req: any, res: any) => {
-      try {
+    const fetchTask = (req: Request, res: Response) => {
+        logger.info(AppConstants.FETCH_TASK.CONTROLLER);
         taskService.fetchTask(req,res);
-      } catch(err) {
-        res.status(500).json("Internal Server error");
-      } 
     }
 
-    const updateTask = (req: any, res: any) => {
-      try {
+    const updateTask = (req: Request, res: Response) => {
+        logger.info(AppConstants.UPDATE_TASK.CONTROLLER);
         taskService.updateTask(req,res);
-      } catch(err) {
-        res.status(500).json("Internal Server error");
-      } 
     }
 
-    const deleteTask = (req: any, res: any) => {
-      try {
+    const deleteTask = (req: Request, res: Response) => {
+        logger.info(AppConstants.DELETE_TASK.CONTROLLER);
         taskService.deleteTask(req,res);
-      } catch(err) {
-        res.status(500).json("Internal Server error");
-      } 
     }
 
     const sortTask = (req: any, res: any) => {
-      try {
         taskService.sortTask(req,res);
-      } catch(err) {
-        res.status(500).json("Internal Server error");
-      } 
     }
 
     return{createTask,fetchTask, updateTask, deleteTask, sortTask}

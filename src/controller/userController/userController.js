@@ -13,34 +13,26 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const userService_1 = __importDefault(require("../../services/userService/userService"));
-const jwt = require("jsonWebToken");
-const dotenv = require("dotenv");
+const appConstants_1 = require("../../constants/appConstants/appConstants");
+const logger_1 = __importDefault(require("../../logger/logger"));
 const userService = (0, userService_1.default)();
 const UserController = () => {
     const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-        try {
-            userService.createUser(req, res);
-        }
-        catch (err) {
-            res.status(500).json("Internal Server Error");
-        }
+        logger_1.default.info(appConstants_1.AppConstants.CREATE_USER.CONTROLLER);
+        yield userService.createUser(req, res);
     });
     const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-        try {
-            userService.login(req, res);
-        }
-        catch (err) {
-            res.status(500).json("Internal Server Error");
-        }
+        yield userService.login(req, res);
     });
-    const verifyToken = (req, res, next) => {
-        try {
-            userService.verifyToken(req, res, next);
-        }
-        catch (err) {
-            res.status(500).json("Internal Server Error");
-        }
-    };
+    /**
+     * Controller responsible for verifying the access token
+     * @param req
+     * @param res
+     * @param next
+     */
+    const verifyToken = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+        yield userService.verifyToken(req, res, next);
+    });
     return { createUser, login, verifyToken };
 };
 exports.default = UserController;
