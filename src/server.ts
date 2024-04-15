@@ -1,6 +1,6 @@
 import { Express } from "express";
 import logger from './logger/logger';
-import router from "./routes/users/userRoute";
+import userRoute from "./routes/users/userRoute";
 import TaskRoute from './routes/tasks/taskRoutes';
 
 const dotenv = require("dotenv");
@@ -13,7 +13,7 @@ const app: Express = express();
 app.use(express.json());
 const port = process.env.PORT;
 
-app.use('/',router);
+app.use('/',userRoute);
 app.use(routeConstants.TASK,TaskRoute);
  
 app.listen(port, () => {

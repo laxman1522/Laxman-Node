@@ -15,12 +15,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const userController_1 = __importDefault(require("../../controller/userController/userController"));
 const routeConstants = require('../../constants/routeConstants');
 const express = require('express');
-const router = express.Router();
+const userRoute = express.Router();
 const userController = (0, userController_1.default)();
-router.post(routeConstants.SIGNUP, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+userRoute.post(routeConstants.SIGNUP, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     userController.createUser(req, res);
 }));
-router.post(routeConstants.LOGIN, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+userRoute.post(routeConstants.LOGIN, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     userController.login(req, res);
 }));
-exports.default = router;
+exports.default = userRoute;

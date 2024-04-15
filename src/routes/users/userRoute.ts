@@ -3,15 +3,15 @@ import { Request, Response } from "express";
 
 const routeConstants = require('../../constants/routeConstants');
 const express = require('express');
-const router = express.Router();
+const userRoute = express.Router();
 const userController = UserController();
 
-router.post(routeConstants.SIGNUP,async (req: Request,res: Response) => {
+userRoute.post(routeConstants.SIGNUP,async (req: Request,res: Response) => {
     userController.createUser(req,res);
 });
 
-router.post(routeConstants.LOGIN,async (req: Request,res: Response) => {
+userRoute.post(routeConstants.LOGIN,async (req: Request,res: Response) => {
     userController.login(req,res);
 });
 
-export default router;
+export default userRoute;
