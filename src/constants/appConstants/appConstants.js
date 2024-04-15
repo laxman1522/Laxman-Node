@@ -68,5 +68,6 @@ exports.AppConstants = {
     PRIORITY_MEDIUM: "medium",
     ERROR: "Error",
     TASK_CREATED_SUCCESSFULLY: "Task Created Successfully",
-    TASK_DATA: "taskData"
+    TASK_DATA: "taskData",
+    TOKEN_EXPIRATION: "30m"
 };

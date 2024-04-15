@@ -73,7 +73,7 @@ const UserService = () => {
                     }
                     else {
                         const user = { name: userName };
-                        const accessToken = generateAccessToken(user, "30m");
+                        const accessToken = generateAccessToken(user, appConstants_1.AppConstants.TOKEN_EXPIRATION);
                         return res.json({ accessToken: accessToken });
                     }
                 });
