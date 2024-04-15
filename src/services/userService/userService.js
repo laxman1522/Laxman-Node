@@ -39,7 +39,7 @@ const UserService = () => {
                     (0, fileService_1.writeFile)(appConstants_1.AppConstants.USER_FILE_NAME, users);
                     const user = { name: userName };
                     const accessToken = generateAccessToken(user, "30m");
-                    return (0, helper_1.setResponse)(res, 200, appConstants_1.AppConstants.ACCESS_TOKEN, accessToken);
+                    return (0, helper_1.setResponse)(res, 201, appConstants_1.AppConstants.ACCESS_TOKEN, accessToken);
                 }
                 else {
                     return (0, helper_1.setResponse)(res, 400, appConstants_1.AppConstants.ERROR, appConstants_1.AppConstants.USER_ALREADY_EXIST);
@@ -67,19 +67,18 @@ const UserService = () => {
             // Check if username already exists
             const existingUser = (0, helper_1.getExistingUserData)(userName, users, appConstants_1.AppConstants.USERNAME);
             if (existingUser) {
-                bcrypt_1.default.compare(password, existingUser === null || existingUser === void 0 ? void 0 : existingUser.password, (err) => {
-                    if (err) {
-                        return (0, helper_1.setResponse)(res, 400, appConstants_1.AppConstants.ERROR, appConstants_1.AppConstants.INVALID_CREDENTIALS);
-                    }
-                    else {
-                        const user = { name: userName };
-                        const accessToken = generateAccessToken(user, appConstants_1.AppConstants.TOKEN_EXPIRATION);
-                        return res.json({ accessToken: accessToken });
-                    }
-                });
+                const isValidPassword = yield bcrypt_1.default.compare(password, existingUser === null || existingUser === void 0 ? void 0 : existingUser.password);
+                if (isValidPassword) {
+                    const user = { name: userName };
+                    const accessToken = generateAccessToken(user, appConstants_1.AppConstants.TOKEN_EXPIRATION);
+                    return res.json({ accessToken: accessToken });
+                }
+                else {
+                    return (0, helper_1.setResponse)(res, 400, appConstants_1.AppConstants.ERROR, appConstants_1.AppConstants.INVALID_CREDENTIALS);
+                }
             }
             else {
-                return (0, helper_1.setResponse)(res, 400, appConstants_1.AppConstants.ERROR, appConstants_1.AppConstants.USER_NOT_FOUND);
+                return (0, helper_1.setResponse)(res, 404, appConstants_1.AppConstants.ERROR, appConstants_1.AppConstants.USER_NOT_FOUND);
             }
         }
         else {
@@ -109,7 +108,7 @@ const UserService = () => {
             });
         }
         catch (err) {
-            return (0, helper_1.setResponse)(res, 400, appConstants_1.AppConstants.ERROR, appConstants_1.AppConstants.INTERNAL_SERVER_ERROR);
+            return (0, helper_1.setResponse)(res, 500, appConstants_1.AppConstants.ERROR, appConstants_1.AppConstants.INTERNAL_SERVER_ERROR);
         }
     };
     return { createUser, login, verifyToken };

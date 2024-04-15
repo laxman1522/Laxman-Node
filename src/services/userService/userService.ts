@@ -33,7 +33,7 @@ const UserService = () => {
                     writeFile(AppConstants.USER_FILE_NAME,users);
                     const user = {name: userName};
                     const accessToken = generateAccessToken(user, "30m");
-                    return setResponse(res,200,AppConstants.ACCESS_TOKEN,accessToken)
+                    return setResponse(res,201,AppConstants.ACCESS_TOKEN,accessToken)
                 } else {
                     return setResponse(res,400,AppConstants.ERROR,AppConstants.USER_ALREADY_EXIST);
                 }
@@ -61,19 +61,18 @@ const UserService = () => {
     
             // Check if username already exists
             const existingUser = getExistingUserData(userName, users,AppConstants.USERNAME);
-    
+
             if(existingUser) {
-                bcrypt.compare(password, existingUser?.password, (err) => {
-                    if(err) {
-                        return setResponse(res,400,AppConstants.ERROR,AppConstants.INVALID_CREDENTIALS);
-                    } else {
-                        const user = {name: userName};
-                        const accessToken = generateAccessToken(user, AppConstants.TOKEN_EXPIRATION);
-                        return res.json({accessToken: accessToken});
-                    }
-                })
+                const isValidPassword = await bcrypt.compare(password, existingUser?.password);
+                if(isValidPassword) {
+                    const user = {name: userName};
+                    const accessToken = generateAccessToken(user, AppConstants.TOKEN_EXPIRATION);
+                    return res.json({accessToken: accessToken});
+                } else {
+                    return setResponse(res,400,AppConstants.ERROR,AppConstants.INVALID_CREDENTIALS);
+                }
             } else {
-               return setResponse(res,400,AppConstants.ERROR,AppConstants.USER_NOT_FOUND)
+               return setResponse(res,404,AppConstants.ERROR,AppConstants.USER_NOT_FOUND)
             }
         } else {
             return setResponse(res,400,AppConstants.ERROR,AppConstants.INVALID_PARAMS);
@@ -104,7 +103,7 @@ const UserService = () => {
               next();
             });
         } catch(err) {
-            return setResponse(res,400,AppConstants.ERROR,AppConstants.INTERNAL_SERVER_ERROR);
+            return setResponse(res,500,AppConstants.ERROR,AppConstants.INTERNAL_SERVER_ERROR);
         }
     };
 
