@@ -3,6 +3,7 @@ import UserService from "../../services/userService/userService";
 import { AppConstants } from "../../constants/appConstants/appConstants";
 import logger from "../../logger/logger";
 import { setResponse } from "../../utils/helper";
+import { STATUS_CODES } from "http";
 
 const userService = UserService();
 
@@ -20,15 +21,18 @@ const UserController: any = () => {
         const password = req?.body?.password;
         if(userName && password) {
           const accessToken = await userService.createUser(userName,password);
-          setResponse(res,201,AppConstants.ACCESS_TOKEN,accessToken);
+          const data = {
+            accessToken: accessToken
+          }
+          setResponse(res,AppConstants.STATUS_CODES.CREATED,true,false,AppConstants.RESPONSE_MESSAGES.SIGNUP_SUCCESS,data);
         } else {
-          setResponse(res,400,AppConstants.MESSAGE,AppConstants.INVALID_REQUEST);
+          setResponse(res,AppConstants.STATUS_CODES.BAD_REQUEST,false,true,AppConstants.RESPONSE_MESSAGES.INVALID_REQUEST,{});
         }
       } catch (error: any) {
           if(error?.message === AppConstants.USER_ALREADY_EXIST) {
-            setResponse(res,200,AppConstants.MESSAGE,AppConstants.USER_ALREADY_EXIST);
+            setResponse(res,AppConstants.STATUS_CODES.SUCCESS,false,true,AppConstants.RESPONSE_MESSAGES.USER_ALREADY_EXIST,{});
           } else {
-            setResponse(res,500, AppConstants.ERROR,AppConstants.INTERNAL_SERVER_ERROR);
+            setResponse(res,AppConstants.STATUS_CODES.INTERNAL_SERVER_ERROR, false, true,error?.message,{});
           }
       }
     }
@@ -45,17 +49,20 @@ const UserController: any = () => {
         const password = req?.body?.password;
         if(userName && password) {
           const accessToken = await userService.login(userName,password);
-          return setResponse(res,201,AppConstants.ACCESS_TOKEN,accessToken);
+          const data = {
+            accessToken: accessToken
+          }
+          return setResponse(res,AppConstants.STATUS_CODES.SUCCESS,true,false,AppConstants.RESPONSE_MESSAGES.LOGIN_SUCCESS,data);
         } else {
-          return setResponse(res,400,AppConstants.MESSAGE,AppConstants.INVALID_REQUEST);
+          return setResponse(res,AppConstants.STATUS_CODES.BAD_REQUEST,false,true,AppConstants.RESPONSE_MESSAGES.INVALID_REQUEST,{});
         }
       } catch (error: any) {
           if(error?.message === AppConstants.USER_NOT_FOUND) {
-            return setResponse(res,200,AppConstants.MESSAGE,AppConstants.USER_NOT_FOUND);
+            return setResponse(res,AppConstants.STATUS_CODES.SUCCESS,false,true,AppConstants.RESPONSE_MESSAGES.USER_NOT_FOUND,{});
           } else if(error?.message === AppConstants.INVALID_CREDENTIALS) {
-            return setResponse(res,200, AppConstants.ERROR,AppConstants.INVALID_CREDENTIALS);
+            return setResponse(res,AppConstants.STATUS_CODES.UNAUTHORIZED,false,true, AppConstants.RESPONSE_MESSAGES.USER_NOT_AUTHORIZED,{});
           } else {
-            return setResponse(res,500, AppConstants.ERROR,AppConstants.INTERNAL_SERVER_ERROR);
+            return setResponse(res,AppConstants.STATUS_CODES.INTERNAL_SERVER_ERROR,true,false, error?.message,{});
           }
       }
     }
@@ -73,13 +80,13 @@ const UserController: any = () => {
         const userName =  await userService.verifyToken(token);
         req.user = userName;
         next();
-      } catch (error) {
+      } catch (error: any) {
           if(error === AppConstants.UNAUTHORIZED) {
-              return setResponse(res,401,AppConstants.ERROR,AppConstants.UNAUTHORIZED)
+              return setResponse(res,AppConstants.STATUS_CODES.UNAUTHORIZED,false,true,AppConstants.RESPONSE_MESSAGES.USER_NOT_AUTHORIZED,{})
           } else if (error === AppConstants.INVALID_TOKEN) {
-            return setResponse(res,403,AppConstants.ERROR,AppConstants.INVALID_TOKEN)
+            return setResponse(res,AppConstants.STATUS_CODES.FORBIDDEN,false,true,AppConstants.RESPONSE_MESSAGES.INVALID_TOKEN,{});
           } else {
-            return setResponse(res,500, AppConstants.ERROR,AppConstants.INTERNAL_SERVER_ERROR);
+            return setResponse(res,AppConstants.STATUS_CODES.INTERNAL_SERVER_ERROR, false,true,error?.message, {});
           }
       }
     };

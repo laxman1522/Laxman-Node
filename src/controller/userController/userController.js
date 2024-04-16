@@ -31,18 +31,21 @@ const UserController = () => {
             const password = (_b = req === null || req === void 0 ? void 0 : req.body) === null || _b === void 0 ? void 0 : _b.password;
             if (userName && password) {
                 const accessToken = yield userService.createUser(userName, password);
-                (0, helper_1.setResponse)(res, 201, appConstants_1.AppConstants.ACCESS_TOKEN, accessToken);
+                const data = {
+                    accessToken: accessToken
+                };
+                (0, helper_1.setResponse)(res, appConstants_1.AppConstants.STATUS_CODES.CREATED, true, false, appConstants_1.AppConstants.RESPONSE_MESSAGES.SIGNUP_SUCCESS, data);
             }
             else {
-                (0, helper_1.setResponse)(res, 400, appConstants_1.AppConstants.MESSAGE, appConstants_1.AppConstants.INVALID_REQUEST);
+                (0, helper_1.setResponse)(res, appConstants_1.AppConstants.STATUS_CODES.BAD_REQUEST, false, true, appConstants_1.AppConstants.RESPONSE_MESSAGES.INVALID_REQUEST, {});
             }
         }
         catch (error) {
             if ((error === null || error === void 0 ? void 0 : error.message) === appConstants_1.AppConstants.USER_ALREADY_EXIST) {
-                (0, helper_1.setResponse)(res, 200, appConstants_1.AppConstants.MESSAGE, appConstants_1.AppConstants.USER_ALREADY_EXIST);
+                (0, helper_1.setResponse)(res, appConstants_1.AppConstants.STATUS_CODES.SUCCESS, false, true, appConstants_1.AppConstants.RESPONSE_MESSAGES.USER_ALREADY_EXIST, {});
             }
             else {
-                (0, helper_1.setResponse)(res, 500, appConstants_1.AppConstants.ERROR, appConstants_1.AppConstants.INTERNAL_SERVER_ERROR);
+                (0, helper_1.setResponse)(res, appConstants_1.AppConstants.STATUS_CODES.INTERNAL_SERVER_ERROR, false, true, error === null || error === void 0 ? void 0 : error.message, {});
             }
         }
     });
@@ -59,21 +62,24 @@ const UserController = () => {
             const password = (_d = req === null || req === void 0 ? void 0 : req.body) === null || _d === void 0 ? void 0 : _d.password;
             if (userName && password) {
                 const accessToken = yield userService.login(userName, password);
-                return (0, helper_1.setResponse)(res, 201, appConstants_1.AppConstants.ACCESS_TOKEN, accessToken);
+                const data = {
+                    accessToken: accessToken
+                };
+                return (0, helper_1.setResponse)(res, appConstants_1.AppConstants.STATUS_CODES.SUCCESS, true, false, appConstants_1.AppConstants.RESPONSE_MESSAGES.LOGIN_SUCCESS, data);
             }
             else {
-                return (0, helper_1.setResponse)(res, 400, appConstants_1.AppConstants.MESSAGE, appConstants_1.AppConstants.INVALID_REQUEST);
+                return (0, helper_1.setResponse)(res, appConstants_1.AppConstants.STATUS_CODES.BAD_REQUEST, false, true, appConstants_1.AppConstants.RESPONSE_MESSAGES.INVALID_REQUEST, {});
             }
         }
         catch (error) {
             if ((error === null || error === void 0 ? void 0 : error.message) === appConstants_1.AppConstants.USER_NOT_FOUND) {
-                return (0, helper_1.setResponse)(res, 200, appConstants_1.AppConstants.MESSAGE, appConstants_1.AppConstants.USER_NOT_FOUND);
+                return (0, helper_1.setResponse)(res, appConstants_1.AppConstants.STATUS_CODES.SUCCESS, false, true, appConstants_1.AppConstants.RESPONSE_MESSAGES.USER_NOT_FOUND, {});
             }
             else if ((error === null || error === void 0 ? void 0 : error.message) === appConstants_1.AppConstants.INVALID_CREDENTIALS) {
-                return (0, helper_1.setResponse)(res, 200, appConstants_1.AppConstants.ERROR, appConstants_1.AppConstants.INVALID_CREDENTIALS);
+                return (0, helper_1.setResponse)(res, appConstants_1.AppConstants.STATUS_CODES.UNAUTHORIZED, false, true, appConstants_1.AppConstants.RESPONSE_MESSAGES.USER_NOT_AUTHORIZED, {});
             }
             else {
-                return (0, helper_1.setResponse)(res, 500, appConstants_1.AppConstants.ERROR, appConstants_1.AppConstants.INTERNAL_SERVER_ERROR);
+                return (0, helper_1.setResponse)(res, appConstants_1.AppConstants.STATUS_CODES.INTERNAL_SERVER_ERROR, true, false, error === null || error === void 0 ? void 0 : error.message, {});
             }
         }
     });
@@ -93,13 +99,13 @@ const UserController = () => {
         }
         catch (error) {
             if (error === appConstants_1.AppConstants.UNAUTHORIZED) {
-                return (0, helper_1.setResponse)(res, 401, appConstants_1.AppConstants.ERROR, appConstants_1.AppConstants.UNAUTHORIZED);
+                return (0, helper_1.setResponse)(res, appConstants_1.AppConstants.STATUS_CODES.UNAUTHORIZED, false, true, appConstants_1.AppConstants.RESPONSE_MESSAGES.USER_NOT_AUTHORIZED, {});
             }
             else if (error === appConstants_1.AppConstants.INVALID_TOKEN) {
-                return (0, helper_1.setResponse)(res, 403, appConstants_1.AppConstants.ERROR, appConstants_1.AppConstants.INVALID_TOKEN);
+                return (0, helper_1.setResponse)(res, appConstants_1.AppConstants.STATUS_CODES.FORBIDDEN, false, true, appConstants_1.AppConstants.RESPONSE_MESSAGES.INVALID_TOKEN, {});
             }
             else {
-                return (0, helper_1.setResponse)(res, 500, appConstants_1.AppConstants.ERROR, appConstants_1.AppConstants.INTERNAL_SERVER_ERROR);
+                return (0, helper_1.setResponse)(res, appConstants_1.AppConstants.STATUS_CODES.INTERNAL_SERVER_ERROR, false, true, error === null || error === void 0 ? void 0 : error.message, {});
             }
         }
     });

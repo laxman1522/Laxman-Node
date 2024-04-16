@@ -62,8 +62,13 @@ const checkIfTaskAvailable = (data, param, paramValue) => {
     return data === null || data === void 0 ? void 0 : data.some((data) => data[param] === paramValue);
 };
 exports.checkIfTaskAvailable = checkIfTaskAvailable;
-const setResponse = (res, status, key, value) => {
-    return res.status(status).json({ [key]: value });
+const setResponse = (res, status, success, error, message, data) => {
+    return res.status(status).json({
+        success: success,
+        error: error,
+        message: message,
+        data: data
+    });
 };
 exports.setResponse = setResponse;
 const findIndexHelper = (data, param, paramValue) => {

@@ -74,5 +74,25 @@ exports.AppConstants = {
     ERROR: "Error",
     TASK_CREATED_SUCCESSFULLY: "Task Created Successfully",
     TASK_DATA: "taskData",
-    TOKEN_EXPIRATION: "30m"
+    TOKEN_EXPIRATION: "30m",
+    RESPONSE_MESSAGES: {
+        SIGNUP_SUCCESS: "User signed up successfully",
+        INVALID_REQUEST: "Invalid Request",
+        USER_ALREADY_EXIST: "User Already Exist",
+        LOGIN_SUCCESS: "User logged in successfully",
+        USER_NOT_FOUND: "User not found",
+        USER_NOT_AUTHORIZED: "User not authorized",
+        INVALID_TOKEN: "Invalid Token",
+        TASK_CREATED_SUCCESSFULLY: "Task created successfully",
+        TASK_NOT_FOUND: "Task not found",
+        TASK_DELETED_SUCCESSFULLY: "Task deleted successfully"
+    },
+    STATUS_CODES: {
+        BAD_REQUEST: 400,
+        CREATED: 201,
+        UNAUTHORIZED: 401,
+        FORBIDDEN: 403,
+        SUCCESS: 200,
+        INTERNAL_SERVER_ERROR: 500
+    }
 };

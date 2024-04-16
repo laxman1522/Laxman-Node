@@ -88,17 +88,18 @@ const UserService = () => {
      * @param next
      * @returns
      */
-    const verifyToken = (token) => {
+    const verifyToken = (token) => __awaiter(void 0, void 0, void 0, function* () {
         if (!token) {
             throw new Error(appConstants_1.AppConstants.UNAUTHORIZED);
         }
-        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-            if (err) {
-                throw new Error(appConstants_1.AppConstants.INVALID_TOKEN);
-            }
+        try {
+            const decoded = yield jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
             return decoded;
-        });
-    };
+        }
+        catch (error) {
+            throw new Error(appConstants_1.AppConstants.INVALID_TOKEN); // Handle specific JWT errors
+        }
+    });
     return { createUser, login, verifyToken };
 };
 exports.default = UserService;

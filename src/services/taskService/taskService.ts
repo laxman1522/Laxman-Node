@@ -3,6 +3,14 @@ import { readFile, writeFile } from '../fileService/fileService';
 import logger from '../../logger/logger';
 import { AppConstants } from '../../constants/appConstants/appConstants';
 
+type TaskParams = {
+  title: string, 
+  description: string, 
+  priority: string, 
+  dueDate: Date, 
+  taskComments: Array<any>
+}
+
 const TaskService: any = () => {
 
   /**
@@ -11,42 +19,25 @@ const TaskService: any = () => {
    * @param res 
    * @returns 
    */
-    const createTask = (req: any, res: any) => {
-      try{
+    const createTask = (taskParams: TaskParams,name: string) => {
         logger.info(AppConstants.CREATE_TASK.SERVICE);
-        // Validate the request body
-        const error = isValidParams(req?.body);
 
-        const {title, description, priority, dueDate, taskComments} = req?.body;
+        const {title, description, priority, dueDate, taskComments} = taskParams;
+        let tasks: any = readFile(AppConstants.TASK_FILE_NAME);
 
-        if(!error && !!Object.keys(req?.body)?.length) {
-          const name = req?.user?.name;
+        // Check if username already exists
+        const existingUser = getExistingUserData(name,tasks,AppConstants.NAME);
+        const task = constructTask(title,description,priority,dueDate,taskComments,existingUser);
 
-          let tasks: any = readFile(AppConstants.TASK_FILE_NAME);
-
-          tasks = parseData(tasks);
-
-          // Check if username already exists
-          const existingUser = getExistingUserData(name,tasks,AppConstants.NAME);
-
-          const task = constructTask(title,description,priority,dueDate,taskComments,existingUser);
-
-          if(existingUser) {
-            for(let data of tasks) {
-                data?.name === name && data?.tasks?.push(task);
-            }
-          } else {
-            tasks.push({name : name, tasks: [task] });
+        if(existingUser) {
+          for(let data of tasks) {
+              data?.name === name && data?.tasks?.push(task);
           }
-            writeFile(AppConstants.TASK_FILE_NAME,tasks);
-            return setResponse(res,200,AppConstants.MESSAGE, AppConstants.TASK_CREATED_SUCCESSFULLY)
         } else {
-          return setResponse(res,400,AppConstants.ERROR,error?.details[0]?.message);
+          tasks.push({name : name, tasks: [task] });
         }
-      } catch (err) {
-        logger.error(AppConstants.CREATE_TASK.ERROR);
-        return setResponse(res,500,AppConstants.ERROR,AppConstants.INTERNAL_SERVER_ERROR);
-      }
+        writeFile(AppConstants.TASK_FILE_NAME,tasks);
+        return tasks;
     }
 
     /**
@@ -117,7 +108,7 @@ const TaskService: any = () => {
         if(sortBy) { //Sorting Logic
 
           if(!AppConstants.SORTBY_PARAMS.includes(sortBy)) {
-            return setResponse(res,400,AppConstants.MESSAGE,AppConstants.INVALID_PARAMS);
+            // return setResponse(res,400,AppConstants.MESSAGE,AppConstants.INVALID_PARAMS);
           } else {
             tasks = sortData(existingUser?.tasks, sortBy);
               if(page && limit) {
@@ -135,7 +126,7 @@ const TaskService: any = () => {
                   return null;
                 } 
             } else {
-              return setResponse(res,400,AppConstants.MESSAGE,AppConstants.INVALID_PARAMS);
+              // return setResponse(res,400,AppConstants.MESSAGE,AppConstants.INVALID_PARAMS);
             }
     
         } else if(taskId) { // fetching the tasks based on the individual tasks id
@@ -145,13 +136,13 @@ const TaskService: any = () => {
         }
 
         if(!tasks || !tasks?.length || !existingUser) {
-            return setResponse(res,404,AppConstants.MESSAGE,AppConstants.TASK_NOT_FOUND);
+            // return setResponse(res,404,AppConstants.MESSAGE,AppConstants.TASK_NOT_FOUND);
         } else {
-          return setResponse(res,200,AppConstants.TASK_DATA,tasks);
+          // return setResponse(res,200,AppConstants.TASK_DATA,tasks);
         }
       } catch (err) {
         logger.error(AppConstants.FETCH_TASK.ERROR);
-        return setResponse(res,500,AppConstants.ERROR, AppConstants.INTERNAL_SERVER_ERROR);
+        // return setResponse(res,500,AppConstants.ERROR, AppConstants.INTERNAL_SERVER_ERROR);
       }
     }
 
@@ -162,9 +153,9 @@ const TaskService: any = () => {
             const taskList = test.slice(startIndex,endIndex);
             const paginationResponse = constructPaginationResponse(taskList,tasks?.length,page,limit,Math.ceil(tasks?.length / limit));
             if(!paginationResponse?.tasks || !paginationResponse?.tasks?.length) {
-              return setResponse(res,404,AppConstants.MESSAGE,AppConstants.TASK_NOT_FOUND);
+              // return setResponse(res,404,AppConstants.MESSAGE,AppConstants.TASK_NOT_FOUND);
             } else {
-              return setResponse(res,200,AppConstants.MESSAGE,paginationResponse);
+              // return setResponse(res,200,AppConstants.MESSAGE,paginationResponse);
             }
     }
 
@@ -184,12 +175,12 @@ const TaskService: any = () => {
         const error = isValidParams(req?.body);
 
         if(!Object.keys(updatedTasks)?.length || error) {
-          return setResponse(res,400,AppConstants.ERROR,!error ? AppConstants.INVALID_REQUEST : error?.details[0]?.message);
+          // return setResponse(res,400,AppConstants.ERROR,!error ? AppConstants.INVALID_REQUEST : error?.details[0]?.message);
         }
 
         for(let key of Object.keys(updatedTasks)) {
             if(!AppConstants.TASK_KEYS.includes(key)) {
-              return setResponse(res,400,AppConstants.ERROR,AppConstants.INVALID_REQUEST);
+              // return setResponse(res,400,AppConstants.ERROR,AppConstants.INVALID_REQUEST);
             }
         }
         let tasks: any = readFile(AppConstants.TASK_FILE_NAME);
@@ -206,13 +197,13 @@ const TaskService: any = () => {
               }
             }
             writeFile(AppConstants.TASK_FILE_NAME,tasks);
-            return setResponse(res,200,AppConstants.MESSAGE,AppConstants.UPDATED);
+            // return setResponse(res,200,AppConstants.MESSAGE,AppConstants.UPDATED);
         } else {
-          return setResponse(res,404,AppConstants.MESSAGE,AppConstants.TASK_NOT_FOUND);
+          // return setResponse(res,404,AppConstants.MESSAGE,AppConstants.TASK_NOT_FOUND);
         } 
       }catch(err) {
         logger.error(AppConstants.UPDATE_TASK.ERROR)
-        return setResponse(res,500,AppConstants.ERROR,AppConstants.INTERNAL_SERVER_ERROR);
+        // return setResponse(res,500,AppConstants.ERROR,AppConstants.INTERNAL_SERVER_ERROR);
       }
     }
 
@@ -222,14 +213,10 @@ const TaskService: any = () => {
      * @param res 
      * @returns 
      */
-    const deleteTask = (req: any, res: any) => {
-      logger.info(AppConstants.DELETE_TASK.SERVICE)
-      try {
-        const name = req?.user?.name;
-        const taskId = req?.params?.id;
+    const deleteTask = (name: string, taskId: number) => {
+        logger.info(AppConstants.DELETE_TASK.SERVICE)
         let isTaskAvailable = false;
         let tasks: any = readFile(AppConstants.TASK_FILE_NAME);
-        tasks = parseData(tasks);
 
         tasks = tasks?.map((task: any) =>  {
           if(task?.name === name) {
@@ -245,14 +232,10 @@ const TaskService: any = () => {
 
         if(isTaskAvailable) {
           writeFile(AppConstants.TASK_FILE_NAME, tasks);
-          res.status(200).json({message: AppConstants.TASK_DELETED});
+          return tasks;
         } else {
-          res.status(404).json({message: AppConstants.TASK_NOT_FOUND});
-        }
-      } catch (err) {
-        logger.error(AppConstants.DELETE_TASK.ERROR)
-        return res.status(500).json({ error: AppConstants.INTERNAL_SERVER_ERROR });
-      }  
+          throw new Error(AppConstants.TASK_NOT_FOUND);
+        } 
     }
 
     return{createTask,fetchTask, updateTask, deleteTask}

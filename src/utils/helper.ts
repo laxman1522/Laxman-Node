@@ -64,8 +64,13 @@ export const sortData = (data: any, param: string) => {
   return data?.some((data: any) => data[param] === paramValue)
  }
 
- export const setResponse = (res: Response, status: number, key: string, value: any) => {
-    return res.status(status).json({[key]: value});
+ export const setResponse = (res: Response, status: number, success: boolean,error: boolean,message: string, data: any) => {
+    return res.status(status).json({
+      success: success,
+      error: error,
+      message: message,
+      data: data
+    });
  }
 
  export const findIndexHelper = (data: Array<any>, param: string, paramValue: any) => {
