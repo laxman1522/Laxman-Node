@@ -115,27 +115,29 @@ const TaskService: any = () => {
         const existingUser = getExistingUserData(name,tasks,AppConstants.NAME);
 
         if(sortBy) { //Sorting Logic
-          if(!AppConstants.SORTBY_PARAMS.includes(sortBy.toLowerCase())) {
+
+          if(!AppConstants.SORTBY_PARAMS.includes(sortBy)) {
             return setResponse(res,400,AppConstants.MESSAGE,AppConstants.INVALID_PARAMS);
           } else {
             tasks = sortData(existingUser?.tasks, sortBy);
+              if(page && limit) {
+                paginationHandler(page,limit,tasks,res);
+                return null;
+              }
           }
+
         } else if(filterParamValue) { //Filter Logic
 
-          if(filterParams.includes(filterParam)) {
-            tasks = filterData(existingUser?.tasks, filterParam,filterParamValue);
-          } else if(page && limit) {
-
-            const startIndex = (page - 1) * limit;
-            const endIndex = startIndex + limit;
-            tasks = existingUser?.tasks?.slice(startIndex, endIndex);
-            const paginationResponse = constructPaginationResponse(tasks,existingUser?.tasks?.length,page,limit,Math.ceil(existingUser?.tasks?.length / limit));
-            return setResponse(res,200,AppConstants.MESSAGE,paginationResponse);
-
-          } else {
-            return setResponse(res,400,AppConstants.MESSAGE,AppConstants.INVALID_PARAMS);
-          }
-         
+            if(filterParams.includes(filterParam)) {
+              tasks = filterData(existingUser?.tasks, filterParam,filterParamValue);
+                if(page && limit) {
+                  paginationHandler(page,limit,tasks,res);
+                  return null;
+                } 
+            } else {
+              return setResponse(res,400,AppConstants.MESSAGE,AppConstants.INVALID_PARAMS);
+            }
+    
         } else if(taskId) { // fetching the tasks based on the individual tasks id
           tasks =  filterData(existingUser?.tasks, AppConstants.ID, Number(taskId)) ;
         } else {
@@ -151,6 +153,19 @@ const TaskService: any = () => {
         logger.error(AppConstants.FETCH_TASK.ERROR);
         return setResponse(res,500,AppConstants.ERROR, AppConstants.INTERNAL_SERVER_ERROR);
       }
+    }
+
+    const paginationHandler = (page: number, limit: number, tasks: any, res: any) => {
+            const startIndex = (page - 1) * limit;
+            const endIndex = startIndex + limit;
+            const test = tasks;
+            const taskList = test.slice(startIndex,endIndex);
+            const paginationResponse = constructPaginationResponse(taskList,tasks?.length,page,limit,Math.ceil(tasks?.length / limit));
+            if(!paginationResponse?.tasks || !paginationResponse?.tasks?.length) {
+              return setResponse(res,404,AppConstants.MESSAGE,AppConstants.TASK_NOT_FOUND);
+            } else {
+              return setResponse(res,200,AppConstants.MESSAGE,paginationResponse);
+            }
     }
 
     /**

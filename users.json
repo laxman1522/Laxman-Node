@@ -14,5 +14,13 @@
   {
     "userName": "test",
     "password": "$2b$10$MgmKUbPzbqBmKUZJVIFlye5i206Ifd3yxV8ZQwsnq7ut5X3ERkvXe"
+  },
+  {
+    "userName": "Laxmanapandi",
+    "password": "$2b$10$OleibXqgHLNk0tJfJqEfv.hzglT3dOfd5xuLYY48k5IqYP619BnFa"
+  },
+  {
+    "userName": "Laxmana",
+    "password": "$2b$10$Im7GRqFh9E2J/GLKdKD5DeT/i4aStSqsc6LUb10PVv5d9KVvRPLOe"
   }
 ]

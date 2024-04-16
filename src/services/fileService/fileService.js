@@ -5,9 +5,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.writeFile = exports.readFile = void 0;
 const fs_1 = __importDefault(require("fs"));
+const helper_1 = require("../../utils/helper");
 const readFile = (filePath) => {
     let fileData = fs_1.default.readFileSync(filePath, 'utf8');
-    return fileData;
+    return (0, helper_1.parseData)(fileData);
 };
 exports.readFile = readFile;
 const writeFile = (filePath, data) => {

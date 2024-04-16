@@ -19,70 +19,66 @@ const appConstants_1 = require("../../constants/appConstants/appConstants");
 const helper_1 = require("../../utils/helper");
 const logger_1 = __importDefault(require("../../logger/logger"));
 const UserService = () => {
-    const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-        var _a, _b;
+    /**
+     * Method for creating a new user with the given username and password
+     * @param userName
+     * @param password
+     * @returns
+     */
+    const createUser = (userName, password) => __awaiter(void 0, void 0, void 0, function* () {
         logger_1.default.info(appConstants_1.AppConstants.CREATE_USER.SERVICE);
-        try {
-            const userName = (_a = req === null || req === void 0 ? void 0 : req.body) === null || _a === void 0 ? void 0 : _a.username;
-            const password = (_b = req === null || req === void 0 ? void 0 : req.body) === null || _b === void 0 ? void 0 : _b.password;
-            if (userName && password) {
-                const saltRounds = yield bcrypt_1.default.genSalt(); // Adjust as needed for security
-                const Password = yield bcrypt_1.default.hash(password, saltRounds);
-                let users = (0, fileService_1.readFile)(appConstants_1.AppConstants.USER_FILE_NAME);
-                users = (0, helper_1.parseData)(users);
-                // Check if username already exists
-                const existingUser = (0, helper_1.getExistingUserData)(userName, users, appConstants_1.AppConstants.USERNAME);
-                if (!existingUser) {
-                    // Add new user to the list
-                    users.push({ userName, password: Password });
-                    // Update the JSON file with the new user list
-                    (0, fileService_1.writeFile)(appConstants_1.AppConstants.USER_FILE_NAME, users);
-                    const user = { name: userName };
-                    const accessToken = generateAccessToken(user, "30m");
-                    return (0, helper_1.setResponse)(res, 201, appConstants_1.AppConstants.ACCESS_TOKEN, accessToken);
-                }
-                else {
-                    return (0, helper_1.setResponse)(res, 400, appConstants_1.AppConstants.ERROR, appConstants_1.AppConstants.USER_ALREADY_EXIST);
-                }
-            }
-            else {
-            }
+        const saltRounds = yield bcrypt_1.default.genSalt(); // Adjust as needed for security
+        const Password = yield bcrypt_1.default.hash(password, saltRounds);
+        //Reading and parsing the user file
+        let users = (0, fileService_1.readFile)(appConstants_1.AppConstants.USER_FILE_NAME);
+        // Check if username already exists
+        const existingUser = (0, helper_1.getExistingUserData)(userName, users, appConstants_1.AppConstants.USERNAME);
+        if (!existingUser) {
+            // Add new user to the list
+            users.push({ userName, password: Password });
+            // Update the JSON file with the new user list
+            (0, fileService_1.writeFile)(appConstants_1.AppConstants.USER_FILE_NAME, users);
+            const user = { name: userName };
+            const accessToken = generateAccessToken(user, "30m");
+            return accessToken;
         }
-        catch (err) {
-            logger_1.default.error(appConstants_1.AppConstants.CREATE_USER.ERROR);
-            return (0, helper_1.setResponse)(res, 404, appConstants_1.AppConstants.ERROR, appConstants_1.AppConstants.INTERNAL_SERVER_ERROR);
+        else {
+            throw new Error(appConstants_1.AppConstants.USER_ALREADY_EXIST);
         }
     });
-    const generateAccessToken = (data, expiresIn) => {
-        const accessToken = jwt.sign(data, process.env.ACCESS_TOKEN_SECRET, { expiresIn: expiresIn });
+    /**
+     * Method for generating the access token
+     * @param data
+     * @param expiresIn
+     * @returns
+     */
+    const generateAccessToken = (userData, expiresIn) => {
+        const accessToken = jwt.sign(userData, process.env.ACCESS_TOKEN_SECRET, { expiresIn: expiresIn });
         return accessToken;
     };
-    const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-        var _c, _d;
-        const userName = (_c = req === null || req === void 0 ? void 0 : req.body) === null || _c === void 0 ? void 0 : _c.username;
-        const password = (_d = req === null || req === void 0 ? void 0 : req.body) === null || _d === void 0 ? void 0 : _d.password;
-        if (userName && password) {
-            let users = (0, fileService_1.readFile)(appConstants_1.AppConstants.USER_FILE_NAME);
-            users = (0, helper_1.parseData)(users);
-            // Check if username already exists
-            const existingUser = (0, helper_1.getExistingUserData)(userName, users, appConstants_1.AppConstants.USERNAME);
-            if (existingUser) {
-                const isValidPassword = yield bcrypt_1.default.compare(password, existingUser === null || existingUser === void 0 ? void 0 : existingUser.password);
-                if (isValidPassword) {
-                    const user = { name: userName };
-                    const accessToken = generateAccessToken(user, appConstants_1.AppConstants.TOKEN_EXPIRATION);
-                    return res.json({ accessToken: accessToken });
-                }
-                else {
-                    return (0, helper_1.setResponse)(res, 400, appConstants_1.AppConstants.ERROR, appConstants_1.AppConstants.INVALID_CREDENTIALS);
-                }
+    /**
+     * Method for allowing the user to login with valid credentials
+     * @param req
+     * @param res
+     * @returns
+     */
+    const login = (userName, password) => __awaiter(void 0, void 0, void 0, function* () {
+        let users = (0, fileService_1.readFile)(appConstants_1.AppConstants.USER_FILE_NAME);
+        // Check if username already exists
+        const existingUser = (0, helper_1.getExistingUserData)(userName, users, appConstants_1.AppConstants.USERNAME);
+        if (existingUser) {
+            const isValidPassword = yield bcrypt_1.default.compare(password, existingUser === null || existingUser === void 0 ? void 0 : existingUser.password);
+            if (isValidPassword) {
+                const user = { name: userName };
+                const accessToken = generateAccessToken(user, appConstants_1.AppConstants.TOKEN_EXPIRATION);
+                return accessToken;
             }
             else {
-                return (0, helper_1.setResponse)(res, 404, appConstants_1.AppConstants.ERROR, appConstants_1.AppConstants.USER_NOT_FOUND);
+                throw new Error(appConstants_1.AppConstants.INVALID_CREDENTIALS);
             }
         }
         else {
-            return (0, helper_1.setResponse)(res, 400, appConstants_1.AppConstants.ERROR, appConstants_1.AppConstants.INVALID_PARAMS);
+            throw new Error(appConstants_1.AppConstants.USER_NOT_FOUND);
         }
     });
     /**
@@ -92,24 +88,16 @@ const UserService = () => {
      * @param next
      * @returns
      */
-    const verifyToken = (req, res, next) => {
-        try {
-            const authHeader = req.headers[appConstants_1.AppConstants === null || appConstants_1.AppConstants === void 0 ? void 0 : appConstants_1.AppConstants.AUTHORIZATION];
-            const token = authHeader && authHeader.split(' ')[1]; // Extract token from header
-            if (!token) {
-                return (0, helper_1.setResponse)(res, 401, appConstants_1.AppConstants.ERROR, appConstants_1.AppConstants.UNAUTHORIZED);
+    const verifyToken = (token) => {
+        if (!token) {
+            throw new Error(appConstants_1.AppConstants.UNAUTHORIZED);
+        }
+        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+            if (err) {
+                throw new Error(appConstants_1.AppConstants.INVALID_TOKEN);
             }
-            jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-                if (err) {
-                    return (0, helper_1.setResponse)(res, 403, appConstants_1.AppConstants.ERROR, appConstants_1.AppConstants.INVALID_TOKEN);
-                }
-                req.user = decoded; // Attach decoded user data to request
-                next();
-            });
-        }
-        catch (err) {
-            return (0, helper_1.setResponse)(res, 500, appConstants_1.AppConstants.ERROR, appConstants_1.AppConstants.INTERNAL_SERVER_ERROR);
-        }
+            return decoded;
+        });
     };
     return { createUser, login, verifyToken };
 };

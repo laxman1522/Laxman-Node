@@ -6,58 +6,68 @@ import {AppConstants} from "../../constants/appConstants/appConstants";
 import { getExistingUserData, parseData, setResponse } from "../../utils/helper";
 import logger from "../../logger/logger";
 
+type userData = {
+    userName: string,
+    password: string
+}
+
+type user = {
+    name: string
+}
+
 const UserService = () => {
 
-    const createUser = async (req: Request,res: Response) => {
+    /**
+     * Method for creating a new user with the given username and password
+     * @param userName 
+     * @param password 
+     * @returns 
+     */
+    const createUser = async (userName: string, password: string) => {
         logger.info(AppConstants.CREATE_USER.SERVICE)
-        try {
-            const userName = req?.body?.username;
-            const password = req?.body?.password;
 
-            if(userName && password) {
-                const saltRounds = await bcrypt.genSalt(); // Adjust as needed for security
-                const Password = await bcrypt.hash(password, saltRounds);
+        const saltRounds = await bcrypt.genSalt(); // Adjust as needed for security
+        const Password = await bcrypt.hash(password, saltRounds);
 
-                let users: any = readFile(AppConstants.USER_FILE_NAME);
+        //Reading and parsing the user file
+        let users: Array<userData> = readFile(AppConstants.USER_FILE_NAME);
 
-                users = parseData(users);
+        // Check if username already exists
+        const existingUser = getExistingUserData(userName, users, AppConstants.USERNAME);
 
-                // Check if username already exists
-                const existingUser = getExistingUserData(userName, users, AppConstants.USERNAME);
-
-                if(!existingUser) {
-                    // Add new user to the list
-                    users.push({ userName, password: Password });
-
-                    // Update the JSON file with the new user list
-                    writeFile(AppConstants.USER_FILE_NAME,users);
-                    const user = {name: userName};
-                    const accessToken = generateAccessToken(user, "30m");
-                    return setResponse(res,201,AppConstants.ACCESS_TOKEN,accessToken)
-                } else {
-                    return setResponse(res,400,AppConstants.ERROR,AppConstants.USER_ALREADY_EXIST);
-                }
-            } else {
-
-            }
-        } catch (err) {
-            logger.error(AppConstants.CREATE_USER.ERROR);
-            return setResponse(res,404,AppConstants.ERROR,AppConstants.INTERNAL_SERVER_ERROR);
+        if(!existingUser) {
+            // Add new user to the list
+            users.push({ userName, password: Password });
+            // Update the JSON file with the new user list
+            writeFile(AppConstants.USER_FILE_NAME,users);
+            const user = {name: userName};
+            const accessToken = generateAccessToken(user, "30m");
+            return accessToken;
+        } else {
+            throw new Error(AppConstants.USER_ALREADY_EXIST);
         }
     }
 
-    const generateAccessToken = (data: any, expiresIn: string) => {
-        const accessToken = jwt.sign(data, process.env.ACCESS_TOKEN_SECRET,{expiresIn: expiresIn});
+    /**
+     * Method for generating the access token
+     * @param data 
+     * @param expiresIn 
+     * @returns 
+     */
+    const generateAccessToken = (userData: user, expiresIn: string) => {
+        const accessToken = jwt.sign(userData, process.env.ACCESS_TOKEN_SECRET,{expiresIn: expiresIn});
         return accessToken;
     }
 
-    const login = async (req: Request,res: Response) => {
-        const userName = req?.body?.username;
-        const password = req?.body?.password;
+    /**
+     * Method for allowing the user to login with valid credentials
+     * @param req 
+     * @param res 
+     * @returns 
+     */
+    const login = async (userName: string,password: string) => {
 
-        if(userName && password) {
-            let users: any = readFile(AppConstants.USER_FILE_NAME);
-            users = parseData(users);
+            let users: Array<userData> = readFile(AppConstants.USER_FILE_NAME);
     
             // Check if username already exists
             const existingUser = getExistingUserData(userName, users,AppConstants.USERNAME);
@@ -67,16 +77,13 @@ const UserService = () => {
                 if(isValidPassword) {
                     const user = {name: userName};
                     const accessToken = generateAccessToken(user, AppConstants.TOKEN_EXPIRATION);
-                    return res.json({accessToken: accessToken});
+                    return accessToken;
                 } else {
-                    return setResponse(res,400,AppConstants.ERROR,AppConstants.INVALID_CREDENTIALS);
+                    throw new Error(AppConstants.INVALID_CREDENTIALS);
                 }
             } else {
-               return setResponse(res,404,AppConstants.ERROR,AppConstants.USER_NOT_FOUND)
+               throw new Error(AppConstants.USER_NOT_FOUND);
             }
-        } else {
-            return setResponse(res,400,AppConstants.ERROR,AppConstants.INVALID_PARAMS);
-        }
     }
 
     /**
@@ -86,25 +93,18 @@ const UserService = () => {
      * @param next 
      * @returns 
      */
-    const verifyToken = (req: any, res: any, next: any) => {
-        try {
-            const authHeader: any = req.headers[AppConstants?.AUTHORIZATION];
-            const token = authHeader && authHeader.split(' ')[1]; // Extract token from header
+    const verifyToken = (token : string) => {
           
             if (!token) {
-                return setResponse(res,401,AppConstants.ERROR,AppConstants.UNAUTHORIZED);
+                throw new Error(AppConstants.UNAUTHORIZED);
             }
-          
+
             jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err:any, decoded: any) => {
-              if (err) {
-                return setResponse(res,403,AppConstants.ERROR,AppConstants.INVALID_TOKEN);
+              if(err) {
+                throw new Error(AppConstants.INVALID_TOKEN);
               }
-              req.user = decoded; // Attach decoded user data to request
-              next();
+              return decoded;
             });
-        } catch(err) {
-            return setResponse(res,500,AppConstants.ERROR,AppConstants.INTERNAL_SERVER_ERROR);
-        }
     };
 
     return {createUser, login, verifyToken};

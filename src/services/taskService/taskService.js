@@ -96,7 +96,7 @@ const TaskService = () => {
      * @returns
      */
     const fetchTask = (req, res) => {
-        var _a, _b, _c, _d, _e, _f, _g, _h;
+        var _a, _b, _c, _d, _e;
         try {
             logger_1.default.info(appConstants_1.AppConstants.FETCH_TASK.SERVICE);
             const name = (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.name;
@@ -111,23 +111,24 @@ const TaskService = () => {
             tasks = (0, helper_1.parseData)(tasks);
             const existingUser = (0, helper_1.getExistingUserData)(name, tasks, appConstants_1.AppConstants.NAME);
             if (sortBy) { //Sorting Logic
-                if (!appConstants_1.AppConstants.SORTBY_PARAMS.includes(sortBy.toLowerCase())) {
+                if (!appConstants_1.AppConstants.SORTBY_PARAMS.includes(sortBy)) {
                     return (0, helper_1.setResponse)(res, 400, appConstants_1.AppConstants.MESSAGE, appConstants_1.AppConstants.INVALID_PARAMS);
                 }
                 else {
                     tasks = (0, helper_1.sortData)(existingUser === null || existingUser === void 0 ? void 0 : existingUser.tasks, sortBy);
+                    if (page && limit) {
+                        paginationHandler(page, limit, tasks, res);
+                        return null;
+                    }
                 }
             }
             else if (filterParamValue) { //Filter Logic
                 if (filterParams.includes(filterParam)) {
                     tasks = (0, helper_1.filterData)(existingUser === null || existingUser === void 0 ? void 0 : existingUser.tasks, filterParam, filterParamValue);
-                }
-                else if (page && limit) {
-                    const startIndex = (page - 1) * limit;
-                    const endIndex = startIndex + limit;
-                    tasks = (_f = existingUser === null || existingUser === void 0 ? void 0 : existingUser.tasks) === null || _f === void 0 ? void 0 : _f.slice(startIndex, endIndex);
-                    const paginationResponse = constructPaginationResponse(tasks, (_g = existingUser === null || existingUser === void 0 ? void 0 : existingUser.tasks) === null || _g === void 0 ? void 0 : _g.length, page, limit, Math.ceil(((_h = existingUser === null || existingUser === void 0 ? void 0 : existingUser.tasks) === null || _h === void 0 ? void 0 : _h.length) / limit));
-                    return (0, helper_1.setResponse)(res, 200, appConstants_1.AppConstants.MESSAGE, paginationResponse);
+                    if (page && limit) {
+                        paginationHandler(page, limit, tasks, res);
+                        return null;
+                    }
                 }
                 else {
                     return (0, helper_1.setResponse)(res, 400, appConstants_1.AppConstants.MESSAGE, appConstants_1.AppConstants.INVALID_PARAMS);
@@ -149,6 +150,20 @@ const TaskService = () => {
         catch (err) {
             logger_1.default.error(appConstants_1.AppConstants.FETCH_TASK.ERROR);
             return (0, helper_1.setResponse)(res, 500, appConstants_1.AppConstants.ERROR, appConstants_1.AppConstants.INTERNAL_SERVER_ERROR);
+        }
+    };
+    const paginationHandler = (page, limit, tasks, res) => {
+        var _a;
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+        const test = tasks;
+        const taskList = test.slice(startIndex, endIndex);
+        const paginationResponse = constructPaginationResponse(taskList, tasks === null || tasks === void 0 ? void 0 : tasks.length, page, limit, Math.ceil((tasks === null || tasks === void 0 ? void 0 : tasks.length) / limit));
+        if (!(paginationResponse === null || paginationResponse === void 0 ? void 0 : paginationResponse.tasks) || !((_a = paginationResponse === null || paginationResponse === void 0 ? void 0 : paginationResponse.tasks) === null || _a === void 0 ? void 0 : _a.length)) {
+            return (0, helper_1.setResponse)(res, 404, appConstants_1.AppConstants.MESSAGE, appConstants_1.AppConstants.TASK_NOT_FOUND);
+        }
+        else {
+            return (0, helper_1.setResponse)(res, 200, appConstants_1.AppConstants.MESSAGE, paginationResponse);
         }
     };
     /**

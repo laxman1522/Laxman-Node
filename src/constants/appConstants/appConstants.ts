@@ -43,6 +43,11 @@ export const AppConstants = {
         ERROR: "Create User Service Error",
         CONTROLLER: "Create User Controller initializing"
     },
+    LOGIN: {
+        SERVICE: "Login Service initializing",
+        ERROR: "Login Service Error",
+        CONTROLLER: "Login Controller initializing"
+    },
     TASK_KEYS: [
         'title',
         'description',

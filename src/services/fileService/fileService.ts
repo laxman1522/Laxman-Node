@@ -1,8 +1,9 @@
 import fs from 'fs';
+import { parseData } from '../../utils/helper';
 
 export const readFile = (filePath: string) => {
         let fileData = fs.readFileSync(filePath, 'utf8');
-        return fileData;
+        return parseData(fileData);
 }
 
 export const writeFile = (filePath: string, data: any) => {
