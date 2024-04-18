@@ -98,7 +98,6 @@ const UserService = () => {
             if (!token) {
                 throw new Error(AppConstants.UNAUTHORIZED);
             }
-            
             try {
                 const decoded = await jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
                 return decoded;

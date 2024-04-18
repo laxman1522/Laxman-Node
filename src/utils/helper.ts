@@ -49,7 +49,13 @@ export const sortData = (data: any, param: string) => {
 }
 
  export const filterData = (data: any,filterParam: string , filterParamValue: any, equal:boolean = true ) => {
-   return data?.filter((data: any) => equal ? data[filterParam] === filterParamValue : data[filterParam] !== filterParamValue);
+   return data?.filter((data: any) => {
+    if(typeof filterParamValue === "string") {
+      return data[filterParam].includes(filterParamValue);
+    } else {
+      return equal ? data[filterParam] === filterParamValue : data[filterParam] !== filterParamValue;
+    }
+   });
  }
 
  export const parseData = (data: any) => {

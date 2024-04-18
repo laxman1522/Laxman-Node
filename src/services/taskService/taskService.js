@@ -44,9 +44,10 @@ const TaskService = () => {
      * @returns
      */
     const constructTask = (title, description, priority, dueDate, taskComments, existingUser) => {
-        var _a, _b;
+        var _a, _b, _c;
+        const id = existingUser && ((_a = existingUser === null || existingUser === void 0 ? void 0 : existingUser.tasks) === null || _a === void 0 ? void 0 : _a.length) ? ((_c = existingUser === null || existingUser === void 0 ? void 0 : existingUser.tasks[((_b = existingUser === null || existingUser === void 0 ? void 0 : existingUser.tasks) === null || _b === void 0 ? void 0 : _b.length) - 1]) === null || _c === void 0 ? void 0 : _c.id) + 1 : 1;
         const task = {
-            id: existingUser ? ((_b = existingUser === null || existingUser === void 0 ? void 0 : existingUser.tasks[((_a = existingUser === null || existingUser === void 0 ? void 0 : existingUser.tasks) === null || _a === void 0 ? void 0 : _a.length) - 1]) === null || _b === void 0 ? void 0 : _b.id) + 1 : 1,
+            id: id,
             title: title,
             description: description,
             priority: priority,
@@ -57,98 +58,75 @@ const TaskService = () => {
         return task;
     };
     /**
-     * method to construct the pagination request response
-     * @param tasks
-     * @param totalTasks
-     * @param currentPage
-     * @param limit
-     * @param totalPages
+     * Method for fetching all the task which user has created
+     * @param name
      * @returns
      */
-    const constructPaginationResponse = (tasks, totalTasks, currentPage, limit, totalPages) => {
-        return {
-            tasks: tasks,
-            totalTasks: totalTasks,
-            currentPage: currentPage,
-            limit: limit,
-            totalPages: totalPages
-        };
-    };
-    /**
-     * Method Handles the logic for fetching all the tasks, tasks based on the id, filter and sort tasks
-     * @param req
-     * @param res
-     * @returns
-     */
-    const fetchTask = (req, res) => {
-        var _a, _b, _c, _d, _e;
-        try {
-            logger_1.default.info(appConstants_1.AppConstants.FETCH_TASK.SERVICE);
-            const name = (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.name;
-            const taskId = (_b = req === null || req === void 0 ? void 0 : req.params) === null || _b === void 0 ? void 0 : _b.id;
-            const sortBy = (_c = req === null || req === void 0 ? void 0 : req.query) === null || _c === void 0 ? void 0 : _c.sortBy;
-            const page = Number((_d = req === null || req === void 0 ? void 0 : req.query) === null || _d === void 0 ? void 0 : _d.page);
-            const limit = Number((_e = req === null || req === void 0 ? void 0 : req.query) === null || _e === void 0 ? void 0 : _e.limit);
-            const filterParams = appConstants_1.AppConstants.FILTER_PARAMS;
-            const filterParam = Object.keys(req === null || req === void 0 ? void 0 : req.query)[0];
-            const filterParamValue = req === null || req === void 0 ? void 0 : req.query[filterParam];
-            let tasks = (0, fileService_1.readFile)(appConstants_1.AppConstants.TASK_FILE_NAME);
-            tasks = (0, helper_1.parseData)(tasks);
-            const existingUser = (0, helper_1.getExistingUserData)(name, tasks, appConstants_1.AppConstants.NAME);
-            if (sortBy) { //Sorting Logic
-                if (!appConstants_1.AppConstants.SORTBY_PARAMS.includes(sortBy)) {
-                    // return setResponse(res,400,AppConstants.MESSAGE,AppConstants.INVALID_PARAMS);
-                }
-                else {
-                    tasks = (0, helper_1.sortData)(existingUser === null || existingUser === void 0 ? void 0 : existingUser.tasks, sortBy);
-                    if (page && limit) {
-                        paginationHandler(page, limit, tasks, res);
-                        return null;
-                    }
-                }
-            }
-            else if (filterParamValue) { //Filter Logic
-                if (filterParams.includes(filterParam)) {
-                    tasks = (0, helper_1.filterData)(existingUser === null || existingUser === void 0 ? void 0 : existingUser.tasks, filterParam, filterParamValue);
-                    if (page && limit) {
-                        paginationHandler(page, limit, tasks, res);
-                        return null;
-                    }
-                }
-                else {
-                    // return setResponse(res,400,AppConstants.MESSAGE,AppConstants.INVALID_PARAMS);
-                }
-            }
-            else if (taskId) { // fetching the tasks based on the individual tasks id
-                tasks = (0, helper_1.filterData)(existingUser === null || existingUser === void 0 ? void 0 : existingUser.tasks, appConstants_1.AppConstants.ID, Number(taskId));
-            }
-            else {
-                tasks = existingUser === null || existingUser === void 0 ? void 0 : existingUser.tasks;
-            }
-            if (!tasks || !(tasks === null || tasks === void 0 ? void 0 : tasks.length) || !existingUser) {
-                // return setResponse(res,404,AppConstants.MESSAGE,AppConstants.TASK_NOT_FOUND);
-            }
-            else {
-                // return setResponse(res,200,AppConstants.TASK_DATA,tasks);
-            }
-        }
-        catch (err) {
-            logger_1.default.error(appConstants_1.AppConstants.FETCH_TASK.ERROR);
-            // return setResponse(res,500,AppConstants.ERROR, AppConstants.INTERNAL_SERVER_ERROR);
-        }
-    };
-    const paginationHandler = (page, limit, tasks, res) => {
-        var _a;
-        const startIndex = (page - 1) * limit;
-        const endIndex = startIndex + limit;
-        const test = tasks;
-        const taskList = test.slice(startIndex, endIndex);
-        const paginationResponse = constructPaginationResponse(taskList, tasks === null || tasks === void 0 ? void 0 : tasks.length, page, limit, Math.ceil((tasks === null || tasks === void 0 ? void 0 : tasks.length) / limit));
-        if (!(paginationResponse === null || paginationResponse === void 0 ? void 0 : paginationResponse.tasks) || !((_a = paginationResponse === null || paginationResponse === void 0 ? void 0 : paginationResponse.tasks) === null || _a === void 0 ? void 0 : _a.length)) {
-            // return setResponse(res,404,AppConstants.MESSAGE,AppConstants.TASK_NOT_FOUND);
+    const fetchTask = (name) => {
+        logger_1.default.info(appConstants_1.AppConstants.FETCH_TASK.SERVICE);
+        let tasks = (0, fileService_1.readFile)(appConstants_1.AppConstants.TASK_FILE_NAME);
+        const existingUser = (0, helper_1.getExistingUserData)(name, tasks, appConstants_1.AppConstants.NAME);
+        if (!tasks || !(tasks === null || tasks === void 0 ? void 0 : tasks.length) || !existingUser) {
+            throw new Error(appConstants_1.AppConstants.TASK_NOT_FOUND);
         }
         else {
-            // return setResponse(res,200,AppConstants.MESSAGE,paginationResponse);
+            return existingUser === null || existingUser === void 0 ? void 0 : existingUser.tasks;
+        }
+    };
+    /**
+     * method for sorting all the task based on the query params value
+     * @param tasks
+     * @param sortBy
+     * @returns
+     */
+    const sortTask = (tasks, sortBy) => {
+        if (!appConstants_1.AppConstants.SORTBY_PARAMS.includes(sortBy)) {
+            throw new Error(appConstants_1.AppConstants.INVALID_PARAMS);
+        }
+        else {
+            return (0, helper_1.sortData)(tasks, sortBy);
+        }
+    };
+    /**
+     * Method for fetching the indivudual task based on the given ID
+     * @param tasks
+     * @param taskId
+     * @returns
+     */
+    const fetchTaskById = (tasks, taskId) => {
+        return (0, helper_1.filterData)(tasks, appConstants_1.AppConstants.ID, taskId);
+    };
+    /**
+     * Mathod for filtering the task based on the query params value
+     * @param tasks
+     * @param filterParam
+     * @param filterParamValue
+     * @returns
+     */
+    const filterTask = (tasks, filterParam, filterParamValue) => {
+        if (appConstants_1.AppConstants.FILTER_PARAMS.includes(filterParam)) {
+            return (0, helper_1.filterData)(tasks, filterParam, filterParamValue);
+        }
+        else {
+            throw new Error(appConstants_1.AppConstants.INVALID_PARAMS);
+        }
+    };
+    /**
+     * Mathod for fetching the task based on the page number  and limit
+     * @param tasks
+     * @param page
+     * @param limit
+     * @returns
+     */
+    const fetchTaskBasedOnPagination = (tasks, page, limit) => {
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+        const taskList = tasks.slice(startIndex, endIndex);
+        if (!taskList || !taskList.length) {
+            throw new Error(appConstants_1.AppConstants.TASK_NOT_FOUND);
+        }
+        else {
+            return taskList;
         }
     };
     /**
@@ -156,44 +134,23 @@ const TaskService = () => {
      * @param req
      * @param res
      */
-    const updateTask = (req, res) => {
-        var _a, _b, _c;
-        try {
-            logger_1.default.info(appConstants_1.AppConstants.UPDATE_TASK.SERVICE);
-            const name = (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a.name;
-            const taskId = (_b = req === null || req === void 0 ? void 0 : req.params) === null || _b === void 0 ? void 0 : _b.id;
-            const updatedTasks = req === null || req === void 0 ? void 0 : req.body;
-            // Validate the request body
-            const error = (0, helper_1.isValidParams)(req === null || req === void 0 ? void 0 : req.body);
-            if (!((_c = Object.keys(updatedTasks)) === null || _c === void 0 ? void 0 : _c.length) || error) {
-                // return setResponse(res,400,AppConstants.ERROR,!error ? AppConstants.INVALID_REQUEST : error?.details[0]?.message);
-            }
-            for (let key of Object.keys(updatedTasks)) {
-                if (!appConstants_1.AppConstants.TASK_KEYS.includes(key)) {
-                    // return setResponse(res,400,AppConstants.ERROR,AppConstants.INVALID_REQUEST);
+    const updateTask = (name, taskId, updatedTasks) => {
+        logger_1.default.info(appConstants_1.AppConstants.UPDATE_TASK.SERVICE);
+        let tasks = (0, fileService_1.readFile)(appConstants_1.AppConstants.TASK_FILE_NAME);
+        const existingUser = (0, helper_1.getExistingUserData)(name, tasks, appConstants_1.AppConstants.NAME);
+        const taskIndex = (0, helper_1.findIndexHelper)(existingUser === null || existingUser === void 0 ? void 0 : existingUser.tasks, appConstants_1.AppConstants.ID, taskId);
+        if (existingUser && taskIndex >= 0) {
+            for (let data of tasks) {
+                if ((data === null || data === void 0 ? void 0 : data.name) === name) {
+                    data.tasks[taskIndex] = Object.assign(Object.assign({}, data.tasks[taskIndex]), updatedTasks);
+                    data.tasks[taskIndex].timeStamp = Date.now();
                 }
             }
-            let tasks = (0, fileService_1.readFile)(appConstants_1.AppConstants.TASK_FILE_NAME);
-            tasks = (0, helper_1.parseData)(tasks);
-            const existingUser = (0, helper_1.getExistingUserData)(name, tasks, appConstants_1.AppConstants.NAME);
-            const taskIndex = (0, helper_1.findIndexHelper)(existingUser === null || existingUser === void 0 ? void 0 : existingUser.tasks, appConstants_1.AppConstants.ID, Number(taskId));
-            if (existingUser && taskIndex >= 0) {
-                for (let data of tasks) {
-                    if ((data === null || data === void 0 ? void 0 : data.name) === name) {
-                        data.tasks[taskIndex] = Object.assign(Object.assign({}, data.tasks[taskIndex]), updatedTasks);
-                        data.tasks[taskIndex].timeStamp = Date.now();
-                    }
-                }
-                (0, fileService_1.writeFile)(appConstants_1.AppConstants.TASK_FILE_NAME, tasks);
-                // return setResponse(res,200,AppConstants.MESSAGE,AppConstants.UPDATED);
-            }
-            else {
-                // return setResponse(res,404,AppConstants.MESSAGE,AppConstants.TASK_NOT_FOUND);
-            }
+            (0, fileService_1.writeFile)(appConstants_1.AppConstants.TASK_FILE_NAME, tasks);
+            return tasks;
         }
-        catch (err) {
-            logger_1.default.error(appConstants_1.AppConstants.UPDATE_TASK.ERROR);
-            // return setResponse(res,500,AppConstants.ERROR,AppConstants.INTERNAL_SERVER_ERROR);
+        else {
+            throw new Error(appConstants_1.AppConstants.TASK_NOT_FOUND);
         }
     };
     /**
@@ -212,7 +169,7 @@ const TaskService = () => {
                 isTaskAvailable = (0, helper_1.checkIfTaskAvailable)(task === null || task === void 0 ? void 0 : task.tasks, appConstants_1.AppConstants.ID, Number(taskId));
                 return {
                     name: name,
-                    tasks: (0, helper_1.filterData)(task === null || task === void 0 ? void 0 : task.tasks, appConstants_1.AppConstants.ID, Number(taskId), false)
+                    tasks: (0, helper_1.filterData)(task === null || task === void 0 ? void 0 : task.tasks, appConstants_1.AppConstants.ID, taskId, false)
                 };
             }
             else {
@@ -227,6 +184,6 @@ const TaskService = () => {
             throw new Error(appConstants_1.AppConstants.TASK_NOT_FOUND);
         }
     };
-    return { createTask, fetchTask, updateTask, deleteTask };
+    return { createTask, fetchTask, updateTask, deleteTask, sortTask, fetchTaskById, filterTask, fetchTaskBasedOnPagination };
 };
 exports.default = TaskService;

@@ -46,7 +46,14 @@ const sortData = (data, param) => {
 };
 exports.sortData = sortData;
 const filterData = (data, filterParam, filterParamValue, equal = true) => {
-    return data === null || data === void 0 ? void 0 : data.filter((data) => equal ? data[filterParam] === filterParamValue : data[filterParam] !== filterParamValue);
+    return data === null || data === void 0 ? void 0 : data.filter((data) => {
+        if (typeof filterParamValue === "string") {
+            return data[filterParam].includes(filterParamValue);
+        }
+        else {
+            return equal ? data[filterParam] === filterParamValue : data[filterParam] !== filterParamValue;
+        }
+    });
 };
 exports.filterData = filterData;
 const parseData = (data) => {

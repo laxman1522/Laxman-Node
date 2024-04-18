@@ -12,6 +12,7 @@ exports.AppConstants = {
     TASK_NOT_FOUND: 'Tasks not found',
     FILTER_PARAMS: ["title", "priority", "dueDate"],
     SORTBY_PARAMS: ["title", "priority", "dueDate"],
+    PAGINATION_PARAMS: ["page", "limit"],
     TASK_FILE_NAME: 'tasks.json',
     USER_FILE_NAME: 'users.json',
     USERNAME: "userName",
@@ -85,7 +86,9 @@ exports.AppConstants = {
         INVALID_TOKEN: "Invalid Token",
         TASK_CREATED_SUCCESSFULLY: "Task created successfully",
         TASK_NOT_FOUND: "Task not found",
-        TASK_DELETED_SUCCESSFULLY: "Task deleted successfully"
+        TASK_DELETED_SUCCESSFULLY: "Task deleted successfully",
+        TASK_UPDATE: "Task updated successfully",
+        TASK_FETCH: "Task fetched successfully"
     },
     STATUS_CODES: {
         BAD_REQUEST: 400,

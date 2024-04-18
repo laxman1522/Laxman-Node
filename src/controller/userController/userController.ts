@@ -3,7 +3,6 @@ import UserService from "../../services/userService/userService";
 import { AppConstants } from "../../constants/appConstants/appConstants";
 import logger from "../../logger/logger";
 import { setResponse } from "../../utils/helper";
-import { STATUS_CODES } from "http";
 
 const userService = UserService();
 

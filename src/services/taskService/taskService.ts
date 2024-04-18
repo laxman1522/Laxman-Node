@@ -51,8 +51,9 @@ const TaskService: any = () => {
      * @returns 
      */
     const constructTask = (title: string,description: string,priority: string,dueDate: any,taskComments: any, existingUser: any) => {
+      const id = existingUser && existingUser?.tasks?.length ?  existingUser?.tasks[existingUser?.tasks?.length-1]?.id + 1 : 1;
         const task = {
-          id: existingUser ? existingUser?.tasks[existingUser?.tasks?.length-1]?.id + 1 : 1,
+          id: id,
           title: title,
           description: description,
           priority: priority,
@@ -64,98 +65,76 @@ const TaskService: any = () => {
     }
 
     /**
-     * method to construct the pagination request response
-     * @param tasks 
-     * @param totalTasks 
-     * @param currentPage 
-     * @param limit 
-     * @param totalPages 
+     * Method for fetching all the task which user has created
+     * @param name 
      * @returns 
      */
-    const constructPaginationResponse = (tasks: Array<any>,totalTasks: number,currentPage: number, limit: number, totalPages: number) => {
-      return {
-        tasks: tasks,
-        totalTasks: totalTasks,
-        currentPage: currentPage,
-        limit: limit,
-        totalPages: totalPages
+    const fetchTask = (name: string) => {
+      logger.info(AppConstants.FETCH_TASK.SERVICE);
+
+      let tasks: any = readFile(AppConstants.TASK_FILE_NAME);
+      const existingUser = getExistingUserData(name,tasks,AppConstants.NAME);
+      if(!tasks || !tasks?.length || !existingUser) {
+          throw new Error(AppConstants.TASK_NOT_FOUND);
+      } else {
+          return existingUser?.tasks;
       }
     }
 
     /**
-     * Method Handles the logic for fetching all the tasks, tasks based on the id, filter and sort tasks
-     * @param req 
-     * @param res 
+     * method for sorting all the task based on the query params value
+     * @param tasks 
+     * @param sortBy 
      * @returns 
      */
-    const fetchTask = (req: any, res: any) => {
-      try {
-        logger.info(AppConstants.FETCH_TASK.SERVICE);
-        const name = req?.user?.name;
-        const taskId = req?.params?.id;
-        const sortBy = req?.query?.sortBy;
-        const page = Number(req?.query?.page);
-        const limit = Number(req?.query?.limit);
-        const filterParams = AppConstants.FILTER_PARAMS;
-        const filterParam = Object.keys(req?.query)[0];
-        const filterParamValue = req?.query[filterParam];
-
-        let tasks: any = readFile(AppConstants.TASK_FILE_NAME);
-        tasks = parseData(tasks);
-
-        const existingUser = getExistingUserData(name,tasks,AppConstants.NAME);
-
-        if(sortBy) { //Sorting Logic
-
-          if(!AppConstants.SORTBY_PARAMS.includes(sortBy)) {
-            // return setResponse(res,400,AppConstants.MESSAGE,AppConstants.INVALID_PARAMS);
-          } else {
-            tasks = sortData(existingUser?.tasks, sortBy);
-              if(page && limit) {
-                paginationHandler(page,limit,tasks,res);
-                return null;
-              }
-          }
-
-        } else if(filterParamValue) { //Filter Logic
-
-            if(filterParams.includes(filterParam)) {
-              tasks = filterData(existingUser?.tasks, filterParam,filterParamValue);
-                if(page && limit) {
-                  paginationHandler(page,limit,tasks,res);
-                  return null;
-                } 
-            } else {
-              // return setResponse(res,400,AppConstants.MESSAGE,AppConstants.INVALID_PARAMS);
-            }
-    
-        } else if(taskId) { // fetching the tasks based on the individual tasks id
-          tasks =  filterData(existingUser?.tasks, AppConstants.ID, Number(taskId)) ;
-        } else {
-          tasks = existingUser?.tasks;
-        }
-
-        if(!tasks || !tasks?.length || !existingUser) {
-            // return setResponse(res,404,AppConstants.MESSAGE,AppConstants.TASK_NOT_FOUND);
-        } else {
-          // return setResponse(res,200,AppConstants.TASK_DATA,tasks);
-        }
-      } catch (err) {
-        logger.error(AppConstants.FETCH_TASK.ERROR);
-        // return setResponse(res,500,AppConstants.ERROR, AppConstants.INTERNAL_SERVER_ERROR);
+    const sortTask = (tasks: any, sortBy: string) => {
+      if(!AppConstants.SORTBY_PARAMS.includes(sortBy)) {
+          throw new Error(AppConstants.INVALID_PARAMS);
+      } else {
+          return sortData(tasks, sortBy);
       }
     }
 
-    const paginationHandler = (page: number, limit: number, tasks: any, res: any) => {
+    /**
+     * Method for fetching the indivudual task based on the given ID
+     * @param tasks 
+     * @param taskId 
+     * @returns 
+     */
+    const fetchTaskById = (tasks: any, taskId: number) => {
+      return filterData(tasks, AppConstants.ID, taskId)
+    }
+
+    /**
+     * Mathod for filtering the task based on the query params value
+     * @param tasks 
+     * @param filterParam 
+     * @param filterParamValue 
+     * @returns 
+     */
+    const filterTask = (tasks: any,filterParam: string, filterParamValue: any) => {
+      if(AppConstants.FILTER_PARAMS.includes(filterParam)) {
+          return filterData(tasks, filterParam,filterParamValue);
+      } else {
+          throw new Error(AppConstants.INVALID_PARAMS);
+      }
+    }
+
+    /**
+     * Mathod for fetching the task based on the page number  and limit
+     * @param tasks 
+     * @param page 
+     * @param limit 
+     * @returns 
+     */
+    const fetchTaskBasedOnPagination = (tasks: any,page: number,limit: number) => {
             const startIndex = (page - 1) * limit;
             const endIndex = startIndex + limit;
-            const test = tasks;
-            const taskList = test.slice(startIndex,endIndex);
-            const paginationResponse = constructPaginationResponse(taskList,tasks?.length,page,limit,Math.ceil(tasks?.length / limit));
-            if(!paginationResponse?.tasks || !paginationResponse?.tasks?.length) {
-              // return setResponse(res,404,AppConstants.MESSAGE,AppConstants.TASK_NOT_FOUND);
+            const taskList = tasks.slice(startIndex,endIndex);
+            if(!taskList|| !taskList.length) {
+              throw new Error(AppConstants.TASK_NOT_FOUND);
             } else {
-              // return setResponse(res,200,AppConstants.MESSAGE,paginationResponse);
+              return taskList;
             }
     }
 
@@ -164,30 +143,12 @@ const TaskService: any = () => {
      * @param req 
      * @param res 
      */
-    const updateTask = (req: any, res: any) => {
-      try {
+    const updateTask = (name: string,taskId: number,updatedTasks: any) => {
         logger.info(AppConstants.UPDATE_TASK.SERVICE);
-        const name = req?.user?.name;
-        const taskId = req?.params?.id;
-        const updatedTasks = req?.body;
 
-        // Validate the request body
-        const error = isValidParams(req?.body);
-
-        if(!Object.keys(updatedTasks)?.length || error) {
-          // return setResponse(res,400,AppConstants.ERROR,!error ? AppConstants.INVALID_REQUEST : error?.details[0]?.message);
-        }
-
-        for(let key of Object.keys(updatedTasks)) {
-            if(!AppConstants.TASK_KEYS.includes(key)) {
-              // return setResponse(res,400,AppConstants.ERROR,AppConstants.INVALID_REQUEST);
-            }
-        }
         let tasks: any = readFile(AppConstants.TASK_FILE_NAME);
-        tasks = parseData(tasks);
-
         const existingUser = getExistingUserData(name,tasks,AppConstants.NAME);
-        const taskIndex = findIndexHelper(existingUser?.tasks,AppConstants.ID,Number(taskId));
+        const taskIndex = findIndexHelper(existingUser?.tasks,AppConstants.ID,taskId);
 
         if(existingUser && taskIndex >= 0) {
             for(let data of tasks) {
@@ -197,14 +158,10 @@ const TaskService: any = () => {
               }
             }
             writeFile(AppConstants.TASK_FILE_NAME,tasks);
-            // return setResponse(res,200,AppConstants.MESSAGE,AppConstants.UPDATED);
+            return tasks;
         } else {
-          // return setResponse(res,404,AppConstants.MESSAGE,AppConstants.TASK_NOT_FOUND);
+          throw new Error(AppConstants.TASK_NOT_FOUND);
         } 
-      }catch(err) {
-        logger.error(AppConstants.UPDATE_TASK.ERROR)
-        // return setResponse(res,500,AppConstants.ERROR,AppConstants.INTERNAL_SERVER_ERROR);
-      }
     }
 
     /**
@@ -224,7 +181,7 @@ const TaskService: any = () => {
             isTaskAvailable = checkIfTaskAvailable(task?.tasks,AppConstants.ID,Number(taskId));
             return {
               name: name,
-              tasks: filterData(task?.tasks,AppConstants.ID,Number(taskId),false)
+              tasks: filterData(task?.tasks,AppConstants.ID,taskId,false)
             }
           }else {
             return task;
@@ -238,7 +195,7 @@ const TaskService: any = () => {
         } 
     }
 
-    return{createTask,fetchTask, updateTask, deleteTask}
+    return{createTask,fetchTask, updateTask, deleteTask, sortTask, fetchTaskById, filterTask, fetchTaskBasedOnPagination}
 }
 
 export default TaskService;
