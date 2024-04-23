@@ -1,7 +1,7 @@
 import { AppConstants } from '../../constants/appConstants/appConstants';
 import logger from '../../logger/logger';
 import TaskService from '../../services/taskService/taskService';
-import { isValidParams, setResponse } from '../../utils/helper';
+import { filterParamsByValue, filterQueryParams, isValidParams, setResponse } from '../../utils/helper';
 
 const taskService = TaskService();
 
@@ -41,24 +41,29 @@ const TaskController: any = () => {
             const sortBy = req?.query?.sortBy;
             const page = Number(req?.query?.page);
             const limit = Number(req?.query?.limit);
-            const filterParams = AppConstants.FILTER_PARAMS;
-            const paginationParams = AppConstants.PAGINATION_PARAMS;
             const queryParam = req?.query;
 
+            const queryParamKeys = Object.keys(queryParam);
+
+            //Checking for any invalid query params
+            queryParamKeys?.forEach((queryParam) => {
+                if(!AppConstants.FILTER_PARAMS.includes(queryParam) && !AppConstants.PAGINATION_PARAMS.includes(queryParam) && queryParam !== AppConstants.SORTBY) {
+                    return setResponse(res,AppConstants.STATUS_CODES.BAD_REQUEST,false,true,AppConstants.RESPONSE_MESSAGES.INVALID_REQUEST,{});
+                }
+            })
+
+            //filtering the filter query param list
+            const filterQueryParamList = filterParamsByValue(queryParamKeys, AppConstants.FILTER_PARAMS);
+
+            //fetching all the task created by the user
             let tasks = taskService.fetchTask(name);
 
             let totalTasks = 0;
 
-            //filter task logic 
-            for(let key of Object.keys(queryParam)) {
-                if(!paginationParams.includes(key.toLocaleLowerCase()) && key !== AppConstants.SORTBY) {
-                    if(filterParams.includes(key)) {
-                        queryParam[key] && (tasks = taskService.filterTask(tasks,key,queryParam[key]));
-                    } else {
-                        return setResponse(res,AppConstants.STATUS_CODES.BAD_REQUEST,false,true,AppConstants.RESPONSE_MESSAGES.INVALID_REQUEST,{});
-                    }
-                }
-            }
+            //Logic for filtering the tasks based on the filter param
+            filterQueryParamList?.forEach((filterQueryParam: string) => {
+                    queryParam[filterQueryParam] && (tasks = taskService.filterTask(tasks,filterQueryParam,queryParam[filterQueryParam]));
+            })
 
             //Fetching task based on the individual id
             if(taskId) {

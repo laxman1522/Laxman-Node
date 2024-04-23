@@ -100,5 +100,9 @@ export const sortData = (data: any, param: string) => {
     return error ? error : null;
  }
 
+ export const filterParamsByValue = (queryParams: Array<string>, allowedParamList: Array<string> ) => {
+    return queryParams.filter((queryParam: string) => allowedParamList.includes(queryParam));
+ }
+
 
  

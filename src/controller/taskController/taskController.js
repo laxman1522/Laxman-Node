@@ -45,22 +45,23 @@ const TaskController = () => {
             const sortBy = (_c = req === null || req === void 0 ? void 0 : req.query) === null || _c === void 0 ? void 0 : _c.sortBy;
             const page = Number((_d = req === null || req === void 0 ? void 0 : req.query) === null || _d === void 0 ? void 0 : _d.page);
             const limit = Number((_e = req === null || req === void 0 ? void 0 : req.query) === null || _e === void 0 ? void 0 : _e.limit);
-            const filterParams = appConstants_1.AppConstants.FILTER_PARAMS;
-            const paginationParams = appConstants_1.AppConstants.PAGINATION_PARAMS;
             const queryParam = req === null || req === void 0 ? void 0 : req.query;
+            const queryParamKeys = Object.keys(queryParam);
+            //Checking for any invalid query params
+            queryParamKeys === null || queryParamKeys === void 0 ? void 0 : queryParamKeys.forEach((queryParam) => {
+                if (!appConstants_1.AppConstants.FILTER_PARAMS.includes(queryParam) && !appConstants_1.AppConstants.PAGINATION_PARAMS.includes(queryParam) && queryParam !== appConstants_1.AppConstants.SORTBY) {
+                    return (0, helper_1.setResponse)(res, appConstants_1.AppConstants.STATUS_CODES.BAD_REQUEST, false, true, appConstants_1.AppConstants.RESPONSE_MESSAGES.INVALID_REQUEST, {});
+                }
+            });
+            //filtering the filter query param list
+            const filterQueryParamList = (0, helper_1.filterParamsByValue)(queryParamKeys, appConstants_1.AppConstants.FILTER_PARAMS);
+            //fetching all the task created by the user
             let tasks = taskService.fetchTask(name);
             let totalTasks = 0;
-            //filter task logic 
-            for (let key of Object.keys(queryParam)) {
-                if (!paginationParams.includes(key.toLocaleLowerCase()) && key !== appConstants_1.AppConstants.SORTBY) {
-                    if (filterParams.includes(key)) {
-                        queryParam[key] && (tasks = taskService.filterTask(tasks, key, queryParam[key]));
-                    }
-                    else {
-                        return (0, helper_1.setResponse)(res, appConstants_1.AppConstants.STATUS_CODES.BAD_REQUEST, false, true, appConstants_1.AppConstants.RESPONSE_MESSAGES.INVALID_REQUEST, {});
-                    }
-                }
-            }
+            //Logic for filtering the tasks based on the filter param
+            filterQueryParamList === null || filterQueryParamList === void 0 ? void 0 : filterQueryParamList.forEach((filterQueryParam) => {
+                queryParam[filterQueryParam] && (tasks = taskService.filterTask(tasks, filterQueryParam, queryParam[filterQueryParam]));
+            });
             //Fetching task based on the individual id
             if (taskId) {
                 tasks = taskService.fetchTaskById(tasks, taskId);

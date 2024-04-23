@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isValidParams = exports.findIndexHelper = exports.setResponse = exports.checkIfTaskAvailable = exports.parseData = exports.filterData = exports.sortData = exports.getExistingUserData = exports.isValidDate = void 0;
+exports.filterParamsByValue = exports.isValidParams = exports.findIndexHelper = exports.setResponse = exports.checkIfTaskAvailable = exports.parseData = exports.filterData = exports.sortData = exports.getExistingUserData = exports.isValidDate = void 0;
 const appConstants_1 = require("../constants/appConstants/appConstants");
 const joi_1 = __importDefault(require("joi"));
 const isValidDate = (date) => {
@@ -96,3 +96,7 @@ const isValidParams = (requestBody) => {
     return error ? error : null;
 };
 exports.isValidParams = isValidParams;
+const filterParamsByValue = (queryParams, allowedParamList) => {
+    return queryParams.filter((queryParam) => allowedParamList.includes(queryParam));
+};
+exports.filterParamsByValue = filterParamsByValue;
