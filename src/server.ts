@@ -19,3 +19,5 @@ app.use(routeConstants.TASK,TaskRoute);
 app.listen(port, () => {
   logger.info(`[server]: Server is running at http://localhost:${port}`);
 }); 
+
+module.exports = {app};

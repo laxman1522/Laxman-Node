@@ -93,9 +93,14 @@ const UserController = () => {
         try {
             const authHeader = req.headers[appConstants_1.AppConstants === null || appConstants_1.AppConstants === void 0 ? void 0 : appConstants_1.AppConstants.AUTHORIZATION];
             const token = authHeader && authHeader.split(' ')[1]; // Extract token from header
-            const userName = yield userService.verifyToken(token);
-            req.user = userName;
-            next();
+            if (token) {
+                const userName = yield userService.verifyToken(token);
+                req.user = userName;
+                next();
+            }
+            else {
+                return (0, helper_1.setResponse)(res, appConstants_1.AppConstants.STATUS_CODES.FORBIDDEN, false, true, appConstants_1.AppConstants.RESPONSE_MESSAGES.INVALID_TOKEN, {});
+            }
         }
         catch (error) {
             if (error === appConstants_1.AppConstants.UNAUTHORIZED) {

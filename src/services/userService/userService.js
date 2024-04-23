@@ -52,10 +52,10 @@ const UserService = () => {
      * @param expiresIn
      * @returns
      */
-    const generateAccessToken = (userData, expiresIn) => {
-        const accessToken = jwt.sign(userData, process.env.ACCESS_TOKEN_SECRET, { expiresIn: expiresIn });
+    const generateAccessToken = (userData, expiresIn) => __awaiter(void 0, void 0, void 0, function* () {
+        const accessToken = yield jwt.sign(userData, process.env.ACCESS_TOKEN_SECRET, { expiresIn: expiresIn });
         return accessToken;
-    };
+    });
     /**
      * Method for allowing the user to login with valid credentials
      * @param req
@@ -70,7 +70,7 @@ const UserService = () => {
             const isValidPassword = yield bcrypt_1.default.compare(password, existingUser === null || existingUser === void 0 ? void 0 : existingUser.password);
             if (isValidPassword) {
                 const user = { name: userName };
-                const accessToken = generateAccessToken(user, appConstants_1.AppConstants.TOKEN_EXPIRATION);
+                const accessToken = yield generateAccessToken(user, appConstants_1.AppConstants.TOKEN_EXPIRATION);
                 return accessToken;
             }
             else {
@@ -100,6 +100,6 @@ const UserService = () => {
             throw new Error(appConstants_1.AppConstants.INVALID_TOKEN); // Handle specific JWT errors
         }
     });
-    return { createUser, login, verifyToken };
+    return { createUser, login, verifyToken, generateAccessToken };
 };
 exports.default = UserService;

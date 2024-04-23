@@ -76,9 +76,14 @@ const UserController: any = () => {
       try {
         const authHeader: any = req.headers[AppConstants?.AUTHORIZATION];
         const token = authHeader && authHeader.split(' ')[1]; // Extract token from header
-        const userName =  await userService.verifyToken(token);
-        req.user = userName;
-        next();
+        if(token) {
+          const userName =  await userService.verifyToken(token); 
+          req.user = userName;
+          next();
+        } else {
+          return setResponse(res,AppConstants.STATUS_CODES.FORBIDDEN,false,true,AppConstants.RESPONSE_MESSAGES.INVALID_TOKEN,{});
+        }
+        
       } catch (error: any) {
           if(error === AppConstants.UNAUTHORIZED) {
               return setResponse(res,AppConstants.STATUS_CODES.UNAUTHORIZED,false,true,AppConstants.RESPONSE_MESSAGES.USER_NOT_AUTHORIZED,{})

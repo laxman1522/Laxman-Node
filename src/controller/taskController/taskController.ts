@@ -37,7 +37,7 @@ const TaskController: any = () => {
         logger.info(AppConstants.FETCH_TASK.CONTROLLER);
         try {
             const name = req?.user?.name;
-            const taskId = req?.params?.id;
+            const taskId = Number(req?.params?.id);
             const sortBy = req?.query?.sortBy;
             const page = Number(req?.query?.page);
             const limit = Number(req?.query?.limit);

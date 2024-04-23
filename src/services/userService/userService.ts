@@ -1,6 +1,5 @@
 import bcrypt from "bcrypt";
 const jwt = require("jsonWebToken");
-import { Request, Response } from "express";
 import { readFile,writeFile } from "../fileService/fileService";
 import {AppConstants} from "../../constants/appConstants/appConstants";
 import { getExistingUserData, parseData, setResponse } from "../../utils/helper";
@@ -54,8 +53,8 @@ const UserService = () => {
      * @param expiresIn 
      * @returns 
      */
-    const generateAccessToken = (userData: user, expiresIn: string) => {
-        const accessToken = jwt.sign(userData, process.env.ACCESS_TOKEN_SECRET,{expiresIn: expiresIn});
+    const generateAccessToken = async (userData: user, expiresIn: string) => {
+        const accessToken = await jwt.sign(userData, process.env.ACCESS_TOKEN_SECRET,{expiresIn: expiresIn});
         return accessToken;
     }
 
@@ -76,7 +75,7 @@ const UserService = () => {
                 const isValidPassword = await bcrypt.compare(password, existingUser?.password);
                 if(isValidPassword) {
                     const user = {name: userName};
-                    const accessToken = generateAccessToken(user, AppConstants.TOKEN_EXPIRATION);
+                    const accessToken = await generateAccessToken(user, AppConstants.TOKEN_EXPIRATION);
                     return accessToken;
                 } else {
                     throw new Error(AppConstants.INVALID_CREDENTIALS);
@@ -106,7 +105,7 @@ const UserService = () => {
             }
     };
 
-    return {createUser, login, verifyToken};
+    return {createUser, login, verifyToken, generateAccessToken};
 }
 
 export default UserService;

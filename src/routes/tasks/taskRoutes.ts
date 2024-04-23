@@ -2,6 +2,7 @@
 import UserController from "../../controller/userController/userController";
 import TaskController from "../../controller/taskController/taskController";
 import { Request, Response } from "express";
+import logger from "../../logger/logger";
 
 const routeConstants = require('../../constants/routeConstants');
 const express = require('express');
