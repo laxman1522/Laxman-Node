@@ -11,15 +11,15 @@ type TaskParams = {
   taskComments: Array<any>
 }
 
-const TaskService: any = () => {
+const TaskService = {
 
   /**
    * Method for handling the logic for creating a new task
    * @param req 
    * @param res 
-   * @returns 
+   * @returns  
    */
-    const createTask = (taskParams: TaskParams,name: string) => {
+    createTask : function(taskParams: TaskParams,name: string) {
         logger.info(AppConstants.CREATE_TASK.SERVICE);
 
         const {title, description, priority, dueDate, taskComments} = taskParams;
@@ -27,7 +27,8 @@ const TaskService: any = () => {
 
         // Check if username already exists
         const existingUser = getExistingUserData(name,tasks,AppConstants.NAME);
-        const task = constructTask(title,description,priority,dueDate,taskComments,existingUser);
+        console.log(existingUser);
+        const task = this.constructTask(title,description,priority,dueDate,taskComments,existingUser);
 
         if(existingUser) {
           for(let data of tasks) {
@@ -38,7 +39,7 @@ const TaskService: any = () => {
         }
         writeFile(AppConstants.TASK_FILE_NAME,tasks);
         return tasks;
-    }
+    },
 
     /**
      * Method for constructing the task from the request body details
@@ -50,7 +51,7 @@ const TaskService: any = () => {
      * @param existingUser 
      * @returns 
      */
-    const constructTask = (title: string,description: string,priority: string,dueDate: any,taskComments: any, existingUser: any) => {
+    constructTask : (title: string,description: string,priority: string,dueDate: any,taskComments: any, existingUser: any) => {
       const id = existingUser && existingUser?.tasks?.length ?  existingUser?.tasks[existingUser?.tasks?.length-1]?.id + 1 : 1;
         const task = {
           id: id,
@@ -62,14 +63,14 @@ const TaskService: any = () => {
           taskComments: taskComments
         }
         return task;
-    }
+    },
 
     /**
      * Method for fetching all the task which user has created
      * @param name 
      * @returns 
      */
-    const fetchTask = (name: string) => {
+    fetchTask: (name: string) => {
       logger.info(AppConstants.FETCH_TASK.SERVICE);
 
       let tasks: any = readFile(AppConstants.TASK_FILE_NAME);
@@ -79,7 +80,7 @@ const TaskService: any = () => {
       } else {
           return existingUser?.tasks;
       }
-    }
+    },
 
     /**
      * method for sorting all the task based on the query params value
@@ -87,13 +88,13 @@ const TaskService: any = () => {
      * @param sortBy 
      * @returns 
      */
-    const sortTask = (tasks: any, sortBy: string) => {
+    sortTask : (tasks: any, sortBy: string) => {
       if(!AppConstants.SORTBY_PARAMS.includes(sortBy)) {
           throw new Error(AppConstants.INVALID_PARAMS);
       } else {
           return sortData(tasks, sortBy);
       }
-    }
+    },
 
     /**
      * Method for fetching the indivudual task based on the given ID
@@ -101,9 +102,9 @@ const TaskService: any = () => {
      * @param taskId 
      * @returns 
      */
-    const fetchTaskById = (tasks: any, taskId: number) => {
+    fetchTaskById : (tasks: any, taskId: number) => {
       return filterData(tasks, AppConstants.ID, taskId)
-    }
+    },
 
     /**
      * Mathod for filtering the task based on the query params value
@@ -112,13 +113,13 @@ const TaskService: any = () => {
      * @param filterParamValue 
      * @returns 
      */
-    const filterTask = (tasks: any,filterParam: string, filterParamValue: any) => {
+    filterTask : (tasks: any,filterParam: string, filterParamValue: any) => {
       if(AppConstants.FILTER_PARAMS.includes(filterParam)) {
           return filterData(tasks, filterParam,filterParamValue);
       } else {
           throw new Error(AppConstants.INVALID_PARAMS);
       }
-    }
+    },
 
     /**
      * Mathod for fetching the task based on the page number  and limit
@@ -127,7 +128,7 @@ const TaskService: any = () => {
      * @param limit 
      * @returns 
      */
-    const fetchTaskBasedOnPagination = (tasks: any,page: number,limit: number) => {
+    fetchTaskBasedOnPagination: (tasks: any,page: number,limit: number) => {
             const startIndex = (page - 1) * limit;
             const endIndex = startIndex + limit;
             const taskList = tasks.slice(startIndex,endIndex);
@@ -136,14 +137,14 @@ const TaskService: any = () => {
             } else {
               return taskList;
             }
-    }
+    },
 
     /**
      * Method that handles the logic for updating the task
      * @param req 
      * @param res 
      */
-    const updateTask = (name: string,taskId: number,updatedTasks: any) => {
+    updateTask : (name: string,taskId: number,updatedTasks: any) => {
         logger.info(AppConstants.UPDATE_TASK.SERVICE);
 
         let tasks: any = readFile(AppConstants.TASK_FILE_NAME);
@@ -162,7 +163,7 @@ const TaskService: any = () => {
         } else {
           throw new Error(AppConstants.TASK_NOT_FOUND);
         } 
-    }
+    },
 
     /**
      * Method handles the logic to delete the individual tasks based on the ID
@@ -170,7 +171,7 @@ const TaskService: any = () => {
      * @param res 
      * @returns 
      */
-    const deleteTask = (name: string, taskId: number) => {
+    deleteTask: (name: string, taskId: number) => {
         logger.info(AppConstants.DELETE_TASK.SERVICE)
         let isTaskAvailable = false;
         let tasks: any = readFile(AppConstants.TASK_FILE_NAME);
@@ -194,8 +195,6 @@ const TaskService: any = () => {
           throw new Error(AppConstants.TASK_NOT_FOUND);
         } 
     }
-
-    return{createTask,fetchTask, updateTask, deleteTask, sortTask, fetchTaskById, filterTask, fetchTaskBasedOnPagination}
 }
 
 export default TaskService;

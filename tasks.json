@@ -71,10 +71,6 @@
     "name": "test",
     "tasks": [
       {
-        "id": 2,
-        "timeStamp": 1713585257184
-      },
-      {
         "id": 3,
         "title": "test",
         "description": "test",

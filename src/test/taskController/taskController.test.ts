@@ -1,80 +1,158 @@
-import supertest from "supertest"
-import { AppConstants } from "../../constants/appConstants/appConstants";
-import UserService from "../../services/userService/userService";
-import UserController from "../../controller/userController/userController";
+import TaskController from "../../controller/taskController/taskController";
+import TaskService from "../../services/taskService/taskService";
 
-const {app} = require('../../server');
+const httpMocks = require('node-mocks-http');
 
 const jwt = require('jsonwebtoken'); 
 
 jest.mock('jsonwebtoken');
 
+const mockTasks2: any = [
+    {
+        name: "test",
+        tasks: [
+        {
+            id: 1,
+            title: "test",
+            description: "test",
+            priority: "medium",
+            dueDate: "2024-10-10",
+            comments: []
+        },
+        {
+            id: 2,
+            title: "test",
+            description: "test",
+            priority: "high",
+            dueDate: "2024-10-10",
+            comments: []
+        },
+        {
+            id: 3,
+            title: "test",
+            description: "test",
+            priority: "low",
+            dueDate: "2024-10-10",
+            comments: []
+        }]
+}]
+
 
 describe("it should test Task Controller", () => {
 
-    it("should test getTask", async () => {
-        await supertest(app).get('/task').expect(403).then((result: any) => {
-            expect(result.text && JSON.parse(result.text).message).toBe(AppConstants.RESPONSE_MESSAGES.INVALID_TOKEN);
-        })
-    })
+    let mockFetchTask: any;
+    let mockFetchTaskById: any;
 
-    it("should test getTask without valid creds", async () => {
-        await supertest(app).get('/task').expect(403).then((result: any) => {
-            expect(result.text && JSON.parse(result.text).message).toBe(AppConstants.RESPONSE_MESSAGES.INVALID_TOKEN);
-        })
-    })
+    beforeAll(() => {
+        const mockUserData = { name: 'test' };
+
+        jwt.verify.mockImplementation((tokenToVerify: string, secret: string) => {
+              return mockUserData; // Return mock data for successful verification
+        });
+
+        mockFetchTask = jest.spyOn(TaskService,'fetchTask').mockReturnValue(mockTasks2[0]?.tasks);
+
+        mockFetchTaskById = jest.spyOn(TaskService, 'fetchTaskById').mockReturnValue(mockTasks2[0]?.tasks[1]);
+    });
+
+    afterAll(() => {
+        jest.resetAllMocks();
+    });
 
     it("should test getTask with proper creds", async () => {
 
-        const mockUserData = { name: 'test' };
-
-        jwt.verify.mockImplementationOnce((tokenToVerify: string, secret: string) => {
-              return mockUserData; // Return mock data for successful verification
+        let req = httpMocks.createRequest({
+            method: 'GET',
+            url: '/tasks',
+            user: { name: 'test' }
         });
 
-        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiTGF4bWFuYXBhbmRpIiwiaWF0IjoxNzEzMzIyNDIyLCJleHAiOjE3MTMzMjQyMjJ9.EVJUd4tR-NT86mW44gLAGSGn_Bf3v1lfoNDVqIQASbs"
+        let res = httpMocks.createResponse();
+    
+        const mockFetchTask = jest.spyOn(TaskService,'fetchTask').mockReturnValue(mockTasks2[0]?.tasks);
 
-        await supertest(app).get('/task').set('Authorization', `Bearer ${token}`).expect(200).then((result: any) => {
-            expect(result.text && JSON.parse(result.text).message).toBe(AppConstants.RESPONSE_MESSAGES.TASK_FETCH);
-        })
+        const taskController = TaskController();
+
+        taskController.fetchTask(req, res);
+
+        const data = res._getJSONData()
+
+        expect(data?.data?.tasks.length).toBe(3);
+
+        expect(mockFetchTask).toHaveBeenCalled();
 
     })
 
 
-    it("should test getTask with proper creds along with sortBy query", async () => {
+    it("should test getTask with proper creds along with Task ID", async () => {
 
-        const mockUserData = { name: 'test' };
-
-        const queryObject = {
-            sortBy: "priority"
-          };
-          
-
-        jwt.verify.mockImplementationOnce((tokenToVerify: string, secret: string) => {
-              return mockUserData; // Return mock data for successful verification
+        let req = httpMocks.createRequest({
+            method: 'GET',
+            url: '/tasks',
+            user: { name: 'test' },
+            params: {
+                id: 2,
+            }
         });
 
-        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiTGF4bWFuYXBhbmRpIiwiaWF0IjoxNzEzMzIyNDIyLCJleHAiOjE3MTMzMjQyMjJ9.EVJUd4tR-NT86mW44gLAGSGn_Bf3v1lfoNDVqIQASbs"
+        let res = httpMocks.createResponse();
 
-        await supertest(app).get('/task').set('Authorization', `Bearer ${token}`).query(queryObject).expect(200).then((result: any) => {
-            expect(result.text && JSON.parse(result.text).message).toBe(AppConstants.RESPONSE_MESSAGES.TASK_FETCH);
-        })
+        const taskController = TaskController();
+
+        taskController.fetchTask(req, res);
+
+        const data = res._getJSONData();
+
+        expect(data?.data?.tasks.id).toBe(2); 
+
+        expect(mockFetchTask).toHaveBeenCalled();
+        expect(mockFetchTaskById).toHaveBeenCalled();
     })
 
 
-    it("should test getTask with proper creds along with taskID", async () => {
+    it("should test getTask with invalid query params", async () => {
 
-        const mockUserData = { name: 'test' };
-          
-
-        jwt.verify.mockImplementationOnce((tokenToVerify: string, secret: string) => {
-              return mockUserData; // Return mock data for successful verification
+        let req = httpMocks.createRequest({
+            method: 'GET',
+            url: '/tasks',
+            user: { name: 'test' },
+            query: {
+                test: 2,
+            }
         });
 
-        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiTGF4bWFuYXBhbmRpIiwiaWF0IjoxNzEzMzIyNDIyLCJleHAiOjE3MTMzMjQyMjJ9.EVJUd4tR-NT86mW44gLAGSGn_Bf3v1lfoNDVqIQASbs"
+        let res: any = httpMocks.createResponse();
 
-        await supertest(app).get('/task/1').set('Authorization', `Bearer ${token}`).expect(200).then((result: any) => {
-            expect(result.text && JSON.parse(result.text).message).toBe(AppConstants.RESPONSE_MESSAGES.TASK_FETCH);
-        })
+        const taskController = TaskController();
+
+        taskController.fetchTask(req, res);
+
+        const data = res._getData();
+
+        expect(JSON.parse(data).message).toEqual("Invalid Request");
+        
+    })
+
+    it("should test getTask with filter query", async () => {
+
+        let req = httpMocks.createRequest({
+            method: 'GET',
+            url: '/tasks',
+            user: { name: 'test' },
+            query: {
+                priority: "high",
+            }
+        });
+
+        let res: any = httpMocks.createResponse();
+
+        const taskController = TaskController();
+
+        taskController.fetchTask(req, res);
+
+        const data = res._getJSONData();
+
+        expect(data?.data?.tasks.length).toBe(1);
+        
     })
 })

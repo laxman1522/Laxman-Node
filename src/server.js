@@ -18,4 +18,7 @@ app.use(routeConstants.TASK, taskRoutes_1.default);
 app.listen(port, () => {
     logger_1.default.info(`[server]: Server is running at http://localhost:${port}`);
 });
+// mongoose.connect('mongodb://localhost:27017/laxmanDemo').then(() => {
+//    logger.info("Database Connected");
+// }) 
 module.exports = { app };

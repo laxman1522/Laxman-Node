@@ -40,7 +40,6 @@ export const sortData = (data: any, param: string) => {
   const sortData = data.sort((data1:any,data2: any) => {
     if(typeof(data1[param]) === "string") {
       return data1[param]?.localeCompare(data2[param]);
-
     } else if(typeof(data1[param] instanceof Date)) {
       return data1[param]-data2[param];
     }
@@ -103,6 +102,4 @@ export const sortData = (data: any, param: string) => {
  export const filterParamsByValue = (queryParams: Array<string>, allowedParamList: Array<string> ) => {
     return queryParams.filter((queryParam: string) => allowedParamList.includes(queryParam));
  }
-
-
  
