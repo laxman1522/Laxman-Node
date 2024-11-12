@@ -1,0 +1,19 @@
+[{
+    "email": "laxmanapandi.baskaran@gmail.com",
+    "name": "laxmana Pandi",
+    "employeeId": "1836",
+    "role": "admin"
+},
+{
+    "email": "varun.subramaniam@gmail.com",
+    "name": "Varun Subramaniam",
+    "employeeId": "1843",
+    "role": "admin"
+},
+{
+    "email": "durga.bogoda@gmail.com",
+    "name": "Durga Bogoda",
+    "employeeId": "1227",
+    "role": "coworker"
+}
+]
