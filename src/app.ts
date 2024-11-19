@@ -4,6 +4,7 @@ import UserRoute from './routes/userRoute';
 import { APP_CONSTANTS } from './constants/appContants';
 import logger from './logger/logger';
 import errorHandler from './middlewares/errorHandler';
+import { asyncWrapper } from './utils/helper';
 
 const app: Express = express();
 app.use(express.json());

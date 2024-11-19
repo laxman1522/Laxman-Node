@@ -11,4 +11,6 @@ export interface userData {
     employeeId: number;
     email: string;
     password: string;
+    approvedUser?:boolean,
+    role?: string
 }

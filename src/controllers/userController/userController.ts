@@ -13,7 +13,7 @@ const UserController = () => {
      * @param req 
      * @param res 
      */
-    const createUser = async (req: Request, res: Response, next: NextFunction) => {
+    const createUser: any = async (req: Request, res: Response, next: NextFunction) => {
         logger.info(APP_CONSTANTS.USER_CONTROLLER.START);
         try {
             const userData = req?.body;
@@ -22,12 +22,12 @@ const UserController = () => {
             if(!isUserExist) {
                 await userService.createUser(userData);
             } else {
-               setResponse(res,APP_CONSTANTS.STATUS_CODES.CONFLICT,false, true, APP_CONSTANTS.ERROR.USER_ALREADY_EXISTS, "");
+               return setResponse(res,APP_CONSTANTS.STATUS_CODES.CONFLICT,false, true, APP_CONSTANTS.ERROR.USER_ALREADY_EXISTS, "");
             }
-            setResponse(res, APP_CONSTANTS.STATUS_CODES.CREATED,true,false,APP_CONSTANTS.SUCCESS.USER_REGISTER,"");
+            return setResponse(res, APP_CONSTANTS.STATUS_CODES.CREATED,true,false,APP_CONSTANTS.SUCCESS.USER_REGISTER,"");
         } catch (err: any) {
-            logger.info(APP_CONSTANTS.USER_CONTROLLER.ERROR);
-            next(err); 
+            logger.error(APP_CONSTANTS.USER_CONTROLLER.ERROR);
+            next(err);  
         }
     }
 
@@ -36,19 +36,20 @@ const UserController = () => {
      * @param req 
      * @param res 
      */
-    const loginUser = (req: Request, res: Response) => {
+    const loginUser: any = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const {email,password} = req?.body;
-            if(!email || !password) {
-                res.status(500).json({message: "required"})
-            } else {
-                const user = userService.loginUser(email,password);
-                res.json(200).json({message: user});
-            }
+            const user = userService.loginUser(email,password);
+            return setResponse(res,APP_CONSTANTS.STATUS_CODES.SUCCESS,true,false,APP_CONSTANTS.SUCCESS.USER_LOGIN,user);
         } catch (err) {
-
+            logger.error(err);
+            next(err);
         }
     }
+
+    
+
+
 
     return {createUser, loginUser}
 }

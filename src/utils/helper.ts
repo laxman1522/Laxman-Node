@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { Response } from "express";
+import { NextFunction, Response } from "express";
 
 /**
  * Method for hashing the password
@@ -55,4 +55,9 @@ const setResponse = (res: Response, status: number, success: boolean,error: bool
     });
  }
 
-export {hashPassword, verifypassword, parseData, setResponse}
+ const asyncWrapper: any = (fn: (req: Request, res: Response, next: any) => Promise<any>) => 
+  (req: Request, res: Response, next: NextFunction) => {
+    Promise.resolve(fn(req, res, next).catch(next)); // Catch errors and pass them to the next middleware
+  };
+
+export {hashPassword, verifypassword, parseData, setResponse, asyncWrapper}

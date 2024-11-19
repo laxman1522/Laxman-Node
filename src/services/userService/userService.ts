@@ -36,7 +36,6 @@ const UserService = () => {
     const loginUser = async (email: string, password: string) => {
         const userData = await User.findOne({email: email });
         const isPasswordMatching = await verifypassword(userData?.password!, password);
-        console.log(isPasswordMatching);
         return userData;
     }
 
