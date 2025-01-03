@@ -1,19 +1,26 @@
-[{
+[
+  {
     "email": "laxmanapandi.baskaran@gmail.com",
     "name": "laxmana Pandi",
     "employeeId": "1836",
     "role": "admin"
-},
-{
+  },
+  {
     "email": "varun.subramaniam@gmail.com",
     "name": "Varun Subramaniam",
     "employeeId": "1843",
     "role": "admin"
-},
-{
-    "email": "durga.bogoda@gmail.com",
-    "name": "Durga Bogoda",
-    "employeeId": "1227",
+  },
+  {
+    "email": "varun.subramania@gmail.com",
+    "name": "Varun Subramaniam",
+    "employeeId": "1835",
     "role": "coworker"
-}
+  },
+  {
+    "email": "laxis@example.com",
+    "name": "Laxis",
+    "employeeId": "1445",
+    "role": "coworker"
+  }
 ]

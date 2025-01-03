@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { NextFunction, Response } from "express";
+import { Response } from "express";
 
 /**
  * Method for hashing the password
@@ -21,6 +21,19 @@ const hashPassword = async (password: string) => {
 const verifypassword = async (existingPassword: string,userPassword: string) => {
     const isPasswordMatching =  await bcrypt.compare(userPassword, existingPassword);
     return isPasswordMatching;
+}
+
+/**
+ * Method for calculating the time difference
+ * @param updatedTime 
+ * @returns 
+ */
+const timeDifference = (updatedTime: string) => {
+  const currentDate: any = new Date(); // Current date
+  const targetDate: any = new Date(updatedTime); // Target date from the input
+  const differenceInTime = currentDate - targetDate; // Difference in milliseconds
+  const differenceInDays = differenceInTime / (1000 * 60 * 60 * 24); // Convert to days
+  return differenceInDays;
 }
 
 /**
@@ -55,9 +68,4 @@ const setResponse = (res: Response, status: number, success: boolean,error: bool
     });
  }
 
- const asyncWrapper: any = (fn: (req: Request, res: Response, next: any) => Promise<any>) => 
-  (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(fn(req, res, next).catch(next)); // Catch errors and pass them to the next middleware
-  };
-
-export {hashPassword, verifypassword, parseData, setResponse, asyncWrapper}
+export {hashPassword, verifypassword, parseData, setResponse, timeDifference}

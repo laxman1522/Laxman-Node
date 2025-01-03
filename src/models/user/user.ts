@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import { userData } from "../../interface/userInterface";
-import { required } from "joi";
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -54,8 +53,8 @@ const userSchema = new mongoose.Schema({
     role: {
         type: String
     },
-    approvedUser: {
-        type: Boolean
+    approvalStatus: {
+        type: String
     }
 }, { timestamps: true })
 

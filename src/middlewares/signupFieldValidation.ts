@@ -1,26 +1,66 @@
 import { Request, Response, NextFunction } from 'express';
-import { APP_CONSTANTS, SIGN_UP_REQUIRED_FIELDS } from '../constants/appContants';
+import Joi from 'joi';
+import { APP_CONSTANTS } from '../constants/appContants';
 import { setResponse } from '../utils/helper';
 
+// Define Joi schema based on the userData interface
+const userDataSchema = Joi.object({
+  name: Joi.string().required(),
+  gender: Joi.string().valid("Male", "Female", "Other").required(),
+  profilePicture: Joi.string().uri().required(),
+  profileBio: Joi.string().max(500).required(),
+  latestWorkDesignation: Joi.string().required(),
+  certifications: Joi.string().allow("").optional(),
+  yearsOfExperiance: Joi.string().pattern(/^\d+$/).required(), // Only numeric strings
+  bu: Joi.string().required(),
+  workLocation: Joi.string().required(),
+  employeeId: Joi.number().integer().required(),
+  email: Joi.string().email().required(),
+  password: Joi.string().min(8).required()
+});
+
+
 /**
- * responsible for validating the request body for signup
+ * Method to validate the signup fields
  * @param req 
  * @param res 
  * @param next 
- * @returns 
  */
-const validateSignupFields = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+const validateSignupFields = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    // Validate the request body against the schema
+    await userDataSchema.validateAsync(req.body, { abortEarly: false });
 
-  // Check for missing required fields
-  for (const field of SIGN_UP_REQUIRED_FIELDS) {
-    if (!req.body[field]) {
-        setResponse(res, APP_CONSTANTS.STATUS_CODES.BAD_REQUEST, false, true,`${field} is required`,"")
-       return null;
+    // Proceed to the next middleware if validation passes
+    next();
+  } catch (error: any) {
+    if (error.isJoi) {
+      // Extract and format error messages
+      const errorMessages = error.details.map((detail: Joi.ValidationErrorItem) => detail?.message);
+
+      setResponse(
+        res,
+        APP_CONSTANTS.STATUS_CODES.BAD_REQUEST,
+        false,
+        true,
+        errorMessages.join(", "),
+        ""
+      );
+    } else {
+      setResponse(
+        res,
+        APP_CONSTANTS.STATUS_CODES.INTERNAL_SERVER_ERROR,
+        false,
+        true,
+       APP_CONSTANTS.ERROR.INTERNAL_SERVER_ERROR,
+        ""
+      );
     }
   }
-
-  // If validation passes, proceed to the next middleware or controller
-  next();
 };
 
 export default validateSignupFields;

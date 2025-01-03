@@ -15,7 +15,7 @@ import { APP_CONSTANTS } from "../constants/appContants";
  */
 const errorHandler = (err: any, req: Request, res: Response, next: NextFunction): any => {
     
-    logger.error(err);
+    logger.error(err?.message);
   
     // Set the status code based on the error (default to 500 if not specified)
     const statusCode = err?.statusCode || 500;

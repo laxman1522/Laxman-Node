@@ -1,6 +1,15 @@
-import { Request, Response, NextFunction } from 'express';
-import { APP_CONSTANTS, LOGIN_REQUIRED_FIELDS } from '../constants/appContants';
+import { Response, NextFunction } from 'express';
+import { APP_CONSTANTS } from '../constants/appContants';
 import { setResponse } from '../utils/helper';
+import Joi from 'joi';
+
+
+// Define Joi schema based on the userData interface
+const userDataSchema = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string().min(8).required()
+});
+
 
 /**
  * responsible for validating the request body for login
@@ -9,20 +18,37 @@ import { setResponse } from '../utils/helper';
  * @param next 
  * @returns 
  */
-const validateLoginFields = async (req: any, res: Response, next: NextFunction): Promise<any> => {
-
-  // Check for missing required fields
-  for (const field of LOGIN_REQUIRED_FIELDS) {
-    if (!req.body[field]) {
-        setResponse(res, APP_CONSTANTS.STATUS_CODES.BAD_REQUEST, false, true,`${field} is required`,"")
-       return null;
+const validateLoginFields = async (req: any, res: Response, next: NextFunction): Promise<void> => {
+  try {
+      // Validate the request body against the schema
+      await userDataSchema.validateAsync(req.body, { abortEarly: false });
+  
+      // Proceed to the next middleware if validation passes
+      next();
+    } catch (error: any) {
+      if (error.isJoi) {
+        // Extract and format error messages
+        const errorMessages = error.details.map((detail: Joi.ValidationErrorItem) => detail?.message);
+  
+        setResponse(
+          res,
+          APP_CONSTANTS.STATUS_CODES.BAD_REQUEST,
+          false,
+          true,
+          errorMessages.join(", "),
+          ""
+        );
+      } else {
+        setResponse(
+          res,
+          APP_CONSTANTS.STATUS_CODES.INTERNAL_SERVER_ERROR,
+          false,
+          true,
+         APP_CONSTANTS.ERROR.INTERNAL_SERVER_ERROR,
+          ""
+        );
+      }
     }
-  }
-
-  req.email = req?.body?.email; 
-
-  // If validation passes, proceed to the next middleware or controller
-  next();
 };
 
 export default validateLoginFields;

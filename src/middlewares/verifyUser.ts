@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { APP_CONSTANTS, SIGN_UP_REQUIRED_FIELDS } from '../constants/appContants';
+import { APP_CONSTANTS } from '../constants/appContants';
 import { setResponse } from '../utils/helper';
 import { User } from "../models/user/user";
 import { userData } from '../interface/userInterface';
@@ -16,7 +16,7 @@ const verifyUser = async (req: any, res: Response, next: NextFunction): Promise<
     const user: userData | null = await User.findOne({email: req?.email});
     if(!user) {
         return setResponse(res,APP_CONSTANTS.STATUS_CODES.NOT_FOUND,false,true,APP_CONSTANTS.ERROR.USER_NOT_EXIST, [])
-    } else if(!user?.approvedUser) {
+    } else if(user?.approvalStatus !== APP_CONSTANTS.APPROVAL_STATUS.APPROVED) {
         return setResponse(res,APP_CONSTANTS.STATUS_CODES.UNAUTHORIZED, true, false, APP_CONSTANTS.ERROR.UNVERIFIED_USER,[]);
     }
 
