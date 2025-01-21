@@ -1,6 +1,6 @@
 import { userData } from "../../interface/userInterface";
 import { User } from "../../models/user/user";
-import { hashPassword, verifypassword } from "../../utils/helper";
+import { hashPassword } from "../../utils/helper";
 import { readFile } from "../fileService/fileService";
 import logger from "../../logger/logger";
 import { APP_CONSTANTS } from "../../constants/appContants";
@@ -15,39 +15,21 @@ const UserService = () => {
      * @param userData 
      * @returns 
      */
-    const createUser = async (userData: userData, updateUser: boolean) => {
+    const createUser = async (userData: userData, isAdmin: boolean) => {
 
         //logger
         logger.info(APP_CONSTANTS?.USER_SERVICE?.CREATE_USER?.START);
 
         try {
             const hashedPassword = await hashPassword(userData?.password);
-            let user;
-            let role = APP_CONSTANTS.ROLES.COWORKER;
-            const cdwWalletUsers = await readFile(APP_CONSTANTS.FILE_PATH.USER_ROLES);
-            for(let walletUser of cdwWalletUsers) {
-                    if(walletUser?.email === userData.email) {
-                        role = walletUser?.role;
-                        user = new User({ ...userData, password: hashedPassword, role: walletUser?.role, approvalStatus: walletUser?.role === APP_CONSTANTS.ROLES.ADMIN ?  APP_CONSTANTS.APPROVAL_STATUS.APPROVED : APP_CONSTANTS.APPROVAL_STATUS.PENDING }); 
-                    }
-            }
-            
-            if(updateUser) {
-                await User.findOneAndUpdate({email: userData?.email},{ $set: {
-                    ...userData,
-                    password: hashedPassword,
-                    role: role,
-                    approvalStatus: role === APP_CONSTANTS.ROLES.ADMIN ?  APP_CONSTANTS.APPROVAL_STATUS.APPROVED : APP_CONSTANTS.APPROVAL_STATUS.PENDING
-                } },{ new: true, upsert: false });
-            } else {
-                user = new User({ ...userData, password: hashedPassword, role: role, approvalStatus: role === APP_CONSTANTS.ROLES.ADMIN ?  APP_CONSTANTS.APPROVAL_STATUS.APPROVED : APP_CONSTANTS.APPROVAL_STATUS.PENDING});
-                await user.save();
-            }
+
+            const user = new User({ ...userData, password: hashedPassword, role: isAdmin ? APP_CONSTANTS.ROLES.ADMIN : APP_CONSTANTS.ROLES.COWORKER, approvalStatus: isAdmin ?  APP_CONSTANTS.APPROVAL_STATUS.APPROVED : APP_CONSTANTS.APPROVAL_STATUS.PENDING});
+            await user.save();
 
             //logger
-            logger.info(APP_CONSTANTS?.USER_SERVICE?.CREATE_USER?.ENDED); 
+            logger.info(APP_CONSTANTS?.USER_SERVICE?.CREATE_USER?.ENDED);
 
-            return user?.role === APP_CONSTANTS.ROLES.ADMIN;
+            return true;
         } catch(err: any) {
             //logger
             logger.info(APP_CONSTANTS?.USER_SERVICE?.CREATE_USER?.ERROR, err?.message);
@@ -60,34 +42,90 @@ const UserService = () => {
 
     /**
      * 
+     * @param userData 
+     * @param isAdmin 
+     */
+    const updateUser = async (userData: userData, isAdmin: boolean) => {
+
+        try {
+            const hashedPassword = await hashPassword(userData?.password);
+
+            await User.findOneAndUpdate({email: userData?.email},{ $set: {
+                ...userData,
+                password: hashedPassword,
+                role: isAdmin ? APP_CONSTANTS.ROLES.ADMIN : APP_CONSTANTS.ROLES.COWORKER,
+                approvalStatus: isAdmin ?  APP_CONSTANTS.APPROVAL_STATUS.APPROVED : APP_CONSTANTS.APPROVAL_STATUS.PENDING
+            } },{ new: true, upsert: false });
+
+        } catch (err: any) {
+
+            //logger
+            logger.info(APP_CONSTANTS?.USER_SERVICE?.CREATE_USER?.ERROR, err?.message);
+
+            const error: any = new Error(APP_CONSTANTS.ERROR.SAVE_USER_ERROR);
+            error.statusCode = APP_CONSTANTS.STATUS_CODES.INTERNAL_SERVER_ERROR;
+            throw error;
+        }
+        
+    }
+
+    /**
+     * Checks whether the user is admin or not
+     * @param email 
+     * @returns 
+     */
+    const getCdwWalletUserData = async (email: string, employeeId: number) => {
+
+        try {
+            let isAdmin = false;
+            let isValidUser = false;
+
+            const cdwWalletUsers = await readFile(APP_CONSTANTS.FILE_PATH.CDW_WALLET_USERS);
+
+            cdwWalletUsers?.forEach((user: any) => {
+                if(user?.email === email) {
+                    if(user?.employeeId === employeeId) {
+                        isAdmin = user?.role === APP_CONSTANTS.ROLES.ADMIN ? true : false;
+                        isValidUser = true;
+                    }
+                }
+            })
+
+            return {isAdmin: isAdmin, isValidUser: isValidUser };
+        } catch(err: any) {
+            logger.error(err?.message);
+            const error: any = err?.message;
+            error.statusCode = APP_CONSTANTS.STATUS_CODES.INTERNAL_SERVER_ERROR;
+            throw error;
+        }
+
+        
+    } 
+
+    /**
+     * 
      * @param email 
      * @param password 
      * @returns 
      */
-    const loginUser = async (email: string, password: string) => {
-        logger.info(APP_CONSTANTS.USER_SERVICE.LOGIN_USER.START);
-        const userData = await User.findOne({email: email });
+    const loginUser = async (email: string) => {
 
-        if(userData) {
-            const isPasswordMatching = await verifypassword(userData?.password!, password);
+        try {
+            logger.info(APP_CONSTANTS.USER_SERVICE.LOGIN_USER.START);
+           
+            const user = {email: email};
+            const accessToken = await generateAccessToken(user, APP_CONSTANTS.TOKEN_EXPIRATION);
 
-            if(isPasswordMatching) {
-                const user = {email: email};
-                const accessToken = await generateAccessToken(user, APP_CONSTANTS.TOKEN_EXPIRATION);
-                logger.info(APP_CONSTANTS.USER_SERVICE.LOGIN_USER.ENDED);
-                return {accessToken: accessToken};
-            } else {
-                logger.info(APP_CONSTANTS.USER_SERVICE.LOGIN_USER.ERROR);
-                const error: any = new Error(APP_CONSTANTS.ERROR.INVALID_PASSWORD);
-                error.statusCode = APP_CONSTANTS.STATUS_CODES.UNAUTHORIZED;
-                throw error;
-            }
-        } else {
-                logger.info(APP_CONSTANTS.USER_SERVICE.LOGIN_USER.ERROR);
-                const error: any = new Error(APP_CONSTANTS.ERROR.INVALID_USER);
-                error.statusCode = APP_CONSTANTS.STATUS_CODES.UNAUTHORIZED;
-                throw error;
+            logger.info(APP_CONSTANTS.USER_SERVICE.LOGIN_USER.ENDED);
+            return {accessToken: accessToken};
+
+        } catch(err: any) {
+            logger.error(err?.message);
+            const error: any = new Error(err?.message);
+            error.statusCode = err?.statusCode ? err?.statusCode : APP_CONSTANTS.STATUS_CODES.INTERNAL_SERVER_ERROR;
+            throw error;
         }
+        
         
     }
 
@@ -97,23 +135,16 @@ const UserService = () => {
      * @param employeeId 
      * @returns 
      */
-    const existingUser = async(email: string, employeeId: number = 0) => {
+    const getExistingUser = async(email: string, employeeId: number = 0) => {
         try {
             const userDetails: userData | null = await User.findOne({$or: [{email:email},{employeeId: employeeId}]});
             return userDetails;
-        } catch(err) {
-
+        } catch(err: any) {
+            logger.error(err?.message);
+            const error: any = err?.message;
+            error.statusCode = APP_CONSTANTS.STATUS_CODES.INTERNAL_SERVER_ERROR;
+            throw error;
         }
-    }
-
-    /**
-     * Responsible for checking whether the registered user is already present in the DB
-     * @param userData 
-     * @returns 
-     */
-    const isUserExist = async (email: string, employeeId: number = 0) => {
-        const userList = await User.find({$or: [{email:email},{employeeId: employeeId}]});
-        return !!userList?.length;
     }
 
       /**
@@ -173,22 +204,26 @@ const UserService = () => {
      * @param email 
      * @returns 
      */
-    const approveUser = async (email: string) => {
-        let user;
+    const approveUser = async (email: string, employeeId: number) => {
+
+        let isValidUser = false;
+
         try {
-            const cdwWalletUsers = await readFile(APP_CONSTANTS.FILE_PATH.USER_ROLES);
+            const cdwWalletUsers = await readFile(APP_CONSTANTS.FILE_PATH.CDW_WALLET_USERS);
+
             for(let walletUser of cdwWalletUsers) {
-                        if(walletUser?.email === email) {
-                            sendEmail(APP_CONSTANTS.MOCK_EMAIL, email, APP_CONSTANTS.CDW_CONNECT_APPROVAL_STATUS, APP_CONSTANTS.APPROVAL_STATUS.APPROVED, APP_CONSTANTS.APPROVAL_STATUS.APPROVED);
-                            user = await User.updateOne({email: email },{$set:{approvalStatus:APP_CONSTANTS.APPROVAL_STATUS.APPROVED}});
-                            return true;
-                        }
+                if(walletUser?.email === email && walletUser?.employeeId === employeeId) {
+                        isValidUser = true; 
+                        break; 
+                }
             }
-            if(!user) {
-                sendEmail(APP_CONSTANTS.MOCK_EMAIL, email, APP_CONSTANTS.CDW_CONNECT_APPROVAL_STATUS, APP_CONSTANTS.APPROVAL_STATUS.REJECTED, APP_CONSTANTS.APPROVAL_STATUS.REJECTED);
-                user = await User.updateOne({email: email },{$set:{approvalStatus:APP_CONSTANTS.APPROVAL_STATUS.REJECTED}});
-                return false;
-            }
+
+            sendEmail(APP_CONSTANTS.MOCK_EMAIL, APP_CONSTANTS.MOCK_EMAIL, APP_CONSTANTS.CDW_CONNECT_APPROVAL_STATUS,isValidUser ? APP_CONSTANTS.APPROVAL_STATUS.APPROVED : APP_CONSTANTS.APPROVAL_STATUS.REJECTED, 
+                    isValidUser ? APP_CONSTANTS.APPROVAL_STATUS.APPROVED : APP_CONSTANTS.APPROVAL_STATUS.REJECTED);
+
+            
+            await User.updateOne({email: email },{$set:{approvalStatus: isValidUser ? APP_CONSTANTS.APPROVAL_STATUS.APPROVED : APP_CONSTANTS.APPROVAL_STATUS.REJECTED}})
+            return isValidUser;
 
         } catch(err) {
             const error: any =  new Error(APP_CONSTANTS.ERROR.APPROVAL_ERROR);
@@ -198,7 +233,7 @@ const UserService = () => {
     }
 
 
-    return{createUser, loginUser, isUserExist, verifyToken, fetchPendingUser, approveUser, getUpdatedTime, existingUser};
+    return{createUser, loginUser, verifyToken, fetchPendingUser, approveUser, getUpdatedTime, getExistingUser, getCdwWalletUserData, updateUser};
 
 }
 

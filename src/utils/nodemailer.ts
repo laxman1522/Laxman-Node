@@ -32,7 +32,6 @@ export const sendEmail = (from : string, to: string, subject: string, text: stri
     }
     // Send the email
     transporter.sendMail(mailOptions, (error: any, info: any) => {
-        console.log()
         if (error) {
          logger.info('Error sending email:', error);
         } else {

@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import UserService from "../../services/userService/userService";
 import logger from "../../logger/logger";
 import { APP_CONSTANTS } from "../../constants/appContants";
-import { setResponse, timeDifference } from "../../utils/helper";
+import { setResponse, timeDifference, verifypassword } from "../../utils/helper";
 import { userData } from "../../interface/userInterface";
 
 const userService: any = UserService();
@@ -17,36 +17,38 @@ const UserController = () => {
     const createUser: any = async (req: Request, res: Response, next: NextFunction) => {
         //logger
         logger.info(APP_CONSTANTS.USER_CONTROLLER.CREATE_USER.START);
-        let isAdmin = false;
+
         try {
             const userData = req?.body;
+
             //checking whether the registered user is already present in the DB
-            const userDetails: userData = await userService?.existingUser(userData?.email, userData?.employeeId);
-            if(!userDetails || !Object.keys(userDetails)?.length) {
-                isAdmin = await userService.createUser(userData, false);
+            const userDetails: userData = await userService?.getExistingUser(userData?.email, userData?.employeeId);
+
+            let cdwWalletUserData = await userService.getCdwWalletUserData(userData?.email, userData?.employeeId);
+
+            if(!cdwWalletUserData?.isValidUser) {
+                return setResponse(res, APP_CONSTANTS.STATUS_CODES.NOT_FOUND,false,true,APP_CONSTANTS.ERROR.INVALID_EMAIL_EMPLOYEE_ID,"");
+            } else if(!userDetails || !Object.keys(userDetails)?.length) {
+                await userService.createUser(userData, cdwWalletUserData?.isAdmin);
+                return setResponse(res, APP_CONSTANTS.STATUS_CODES.CREATED,true,false,cdwWalletUserData?.isAdmin ? APP_CONSTANTS.SUCCESS.USER_REGISTER : APP_CONSTANTS.SUCCESS.USER_PENDING,"");
             } else {
-                let message = "";
                 if(userDetails.approvalStatus === APP_CONSTANTS.APPROVAL_STATUS.APPROVED) {
-                    message = APP_CONSTANTS.ERROR.USER_ALREADY_EXISTS;
+                    return setResponse(res,APP_CONSTANTS.STATUS_CODES.CONFLICT,false, true, APP_CONSTANTS.ERROR.USER_ALREADY_EXISTS, "");
                 } else if (userDetails.approvalStatus === APP_CONSTANTS.APPROVAL_STATUS.PENDING) {
-                    message = APP_CONSTANTS.ERROR.USER_ALREADY_REGISTERED_PENDING;
+                    return setResponse(res,APP_CONSTANTS.STATUS_CODES.CONFLICT,false, true, APP_CONSTANTS.ERROR.USER_ALREADY_REGISTERED_PENDING, "");
                 } else if (userDetails.approvalStatus === APP_CONSTANTS.APPROVAL_STATUS.REJECTED) {
+
                     const updatedTime = await userService.getUpdatedTime(req?.body?.email);
                     const diffInDays = timeDifference(updatedTime);
                    
                     if(diffInDays < 2) {
-                        message = APP_CONSTANTS.ERROR.USER_ALREADY_REGISTERED_REJECTED;
+                        return setResponse(res,APP_CONSTANTS.STATUS_CODES.CONFLICT,false, true, APP_CONSTANTS.ERROR.USER_ALREADY_REGISTERED_REJECTED, "");
                     } else {
-                        await userService.createUser(userData, true);
-                        message = APP_CONSTANTS.ERROR.USER_ALREADY_REREGISTERED;
+                        await userService.updateUser(userData);
+                        return setResponse(res, APP_CONSTANTS.STATUS_CODES.CREATED, true, false, APP_CONSTANTS.ERROR.USER_REREGISTERED, "");
                     }
-                    
                 }
-               return setResponse(res,APP_CONSTANTS.STATUS_CODES.CONFLICT,false, true, message, "");
             }
-            //logger
-            logger.info(APP_CONSTANTS.USER_CONTROLLER.CREATE_USER.ENDED);
-            return setResponse(res, APP_CONSTANTS.STATUS_CODES.CREATED,true,false,isAdmin ? APP_CONSTANTS.SUCCESS.USER_REGISTER : APP_CONSTANTS.SUCCESS.USER_PENDING,"");
         } catch (err: any) {
             //logger
             logger.error(APP_CONSTANTS.USER_CONTROLLER.CREATE_USER.ERROR);
@@ -63,9 +65,26 @@ const UserController = () => {
         logger.info(APP_CONSTANTS.USER_CONTROLLER.LOGIN_USER.START);
         try {
             const {email,password} = req?.body;
-            const user = await userService.loginUser(email,password);
-            logger.info(APP_CONSTANTS.USER_CONTROLLER.LOGIN_USER.ENDED);
-            return setResponse(res,APP_CONSTANTS.STATUS_CODES.SUCCESS,true,false,APP_CONSTANTS.SUCCESS.USER_LOGIN,user);
+
+            //checking whether the registered user is present in the DB
+            const userDetails: userData = await userService?.getExistingUser(email);
+
+            if(!userDetails || !Object.keys(userDetails)?.length) {
+                return setResponse(res, APP_CONSTANTS.STATUS_CODES.NOT_FOUND, false, true, APP_CONSTANTS.ERROR.USER_NOT_EXIST, "");
+            } else if(userDetails?.approvalStatus !== APP_CONSTANTS.APPROVAL_STATUS.APPROVED) {
+                return setResponse(res,APP_CONSTANTS.STATUS_CODES.UNAUTHORIZED, true, false, APP_CONSTANTS.ERROR.UNVERIFIED_USER,[]);
+            } else {
+
+                const isPasswordMatching = await verifypassword(userDetails?.password!, password);
+
+                if(isPasswordMatching) {
+                    const user = await userService.loginUser(email);
+                    return setResponse(res,APP_CONSTANTS.STATUS_CODES.SUCCESS,true,false,APP_CONSTANTS.SUCCESS.USER_LOGIN,user);
+                } else {
+                    return setResponse(res, APP_CONSTANTS.STATUS_CODES.UNAUTHORIZED, false, true, APP_CONSTANTS.ERROR.INVALID_PASSWORD, "");
+                }
+
+            }
         } catch (err) {
             logger.info(APP_CONSTANTS.USER_CONTROLLER.LOGIN_USER.ERROR, err);
             next(err);
@@ -101,19 +120,24 @@ const UserController = () => {
             logger.info(APP_CONSTANTS.USER_CONTROLLER.APPROVE_USER.START);
             try {
                 //checking whether the registered user is already present in the DB
-                const isUserExist = await userService?.isUserExist(req.body?.email);
+                const userDetails = await userService?.getExistingUser(req.body?.email);
 
-                if(!isUserExist) {
+                if(!userDetails || !Object.keys(userDetails)?.length) {
                     return setResponse(res,APP_CONSTANTS.STATUS_CODES.NOT_FOUND,false, true, APP_CONSTANTS.ERROR.INVALID_USER, "");
+                } else if(userDetails?.approvalStatus === APP_CONSTANTS.APPROVAL_STATUS.REJECTED) {
+                    return setResponse(res, APP_CONSTANTS.STATUS_CODES.FORBIDDEN, false, true, APP_CONSTANTS.ERROR.USER_ALREADY_REGISTERED_REJECTED,"");
+                } else if(userDetails?.approvalStatus === APP_CONSTANTS.APPROVAL_STATUS.APPROVED) {
+                    return setResponse(res, APP_CONSTANTS.STATUS_CODES.FORBIDDEN, false, true, APP_CONSTANTS.ERROR.USER_ALREADY_APPROVED,"");
                 } else {
-                   const user = await userService.approveUser(req.body?.email);
+                   const user = await userService.approveUser(req.body?.email, userDetails?.employeeId);
 
                    if(!user) {
                      return setResponse(res, APP_CONSTANTS.STATUS_CODES.SUCCESS, false, true, APP_CONSTANTS.ERROR.REJECTED, "");
+                   } else {
+                     return setResponse(res, APP_CONSTANTS.STATUS_CODES.SUCCESS, true, false, APP_CONSTANTS.SUCCESS.USER_APPROVED, {});
                    }
                 }
-                logger.info(APP_CONSTANTS.USER_CONTROLLER.APPROVE_USER.ENDED);
-                return setResponse(res, APP_CONSTANTS.STATUS_CODES.SUCCESS, true, false, APP_CONSTANTS.SUCCESS.USER_APPROVED, {});
+                
             } catch(err: any) {
                 logger.info(APP_CONSTANTS.USER_CONTROLLER.APPROVE_USER.ERROR, err);
                 next(err);

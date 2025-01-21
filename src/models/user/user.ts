@@ -23,10 +23,10 @@ const userSchema = new mongoose.Schema({
         required: true
     },
     certifications: {
-        type: String,
+        type: Array,
         required: true
     },
-    yearsOfExperiance: {
+    yearsOfExperience: {
         type: String,
         required: true
     },

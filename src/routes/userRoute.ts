@@ -1,10 +1,9 @@
 
-import express, { NextFunction, Request, Response, Router } from "express";
+import express, { Router } from "express";
 import UserController  from "../controllers/userController/userController";
 import { ROUTE_CONSTANTS } from "../constants/routeConstants";
 import validateSignupFields from "../middlewares/signupFieldValidation";
 import validateLoginFields from "../middlewares/loginFieldValidation";
-import verifyUser from "../middlewares/verifyUser";
 import verifyAdmin from "../middlewares/verifyAdmin";
 import verifyToken from "../middlewares/verifyToken";
 

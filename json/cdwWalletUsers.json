@@ -1,0 +1,26 @@
+[
+  {
+    "email": "laxmanapandi.baskaran@cdw.com",
+    "name": "laxmana Pandi",
+    "employeeId": 1836,
+    "role": "admin"
+  },
+  {
+    "email": "varun.subramaniam@cdw.com",
+    "name": "Varun Subramaniam",
+    "employeeId": 1843,
+    "role": "coworker"
+  },
+  {
+    "email": "durga.bogoda@cdw.com",
+    "name": "NVL Durga",
+    "employeeId": 1227,
+    "role": "coworker"
+  },
+  {
+    "email": "abhishek.jayaram@cdw.com",
+    "name": "Abishek",
+    "employeeId": 1399,
+    "role": "coworker"
+  }
+]

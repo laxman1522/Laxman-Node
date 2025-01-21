@@ -4,8 +4,6 @@ import { setResponse } from "../../utils/helper";
 import { APP_CONSTANTS } from "../../constants/appContants";
 import logger from "../../logger/logger";
 
-const newsFeedService = NewsFeedService();
-
 const NewsFeedController: any = () => {
 
     /**
@@ -17,7 +15,7 @@ const NewsFeedController: any = () => {
     const createFeed = async (req: any, res: Response, next: NextFunction) => {
             try{
                 logger.info(APP_CONSTANTS.FEED_CONTROLLER.CREATE_FEED.START);
-                await newsFeedService.createFeed(req?.body, req?.email);
+                await NewsFeedService.createFeed(req?.body, req?.email);
                 logger.info(APP_CONSTANTS.FEED_CONTROLLER.CREATE_FEED.ENDED);
                 return setResponse(res,APP_CONSTANTS.STATUS_CODES.CREATED, true, false, APP_CONSTANTS.SUCCESS.FEED_CREATED, []);
             } catch(err) {
@@ -37,16 +35,17 @@ const NewsFeedController: any = () => {
             logger.info(APP_CONSTANTS.FEED_CONTROLLER.FETCH_FEED.START);
             const feedId = Number(req?.params?.id);
             const email = req?.query?.email;
-            let feedData;
+            let feedData: any;
+
             if(feedId) {
-              feedData =  await newsFeedService.fetchFeedByID(feedId);
+              feedData =  await NewsFeedService.fetchFeedByID(feedId);
             } else if(email) {
-                feedData = await newsFeedService.fetchFeedByEmail(email);
+                feedData = await NewsFeedService.fetchFeedByEmail(email);
             } else {
-                feedData = await newsFeedService.fetchFeed();
+                feedData = await NewsFeedService.fetchFeed();
             }
             logger.info(APP_CONSTANTS.FEED_CONTROLLER.FETCH_FEED.ENDED, feedData);
-            if(feedData) {
+            if(feedData && (!!Object.keys(feedData)?.length || !!feedData?.length)) {
                 return setResponse(res, APP_CONSTANTS.STATUS_CODES.SUCCESS, true, false, APP_CONSTANTS.SUCCESS.FEED_FETCHED, feedData);
             } else {
                 return setResponse(res, APP_CONSTANTS.STATUS_CODES.SUCCESS, false, true, feedId ? APP_CONSTANTS.ERROR.NO_FEED_AVAILABLE_FOR_ID : APP_CONSTANTS.ERROR.NO_FEED_AVAILABLE, []);
@@ -66,15 +65,14 @@ const NewsFeedController: any = () => {
      */
     const deleteFeed = async (req: any, res: Response, next: NextFunction) => {
         try {
-            const document = await newsFeedService.findFeed(req?.params?.id, req?.email);
-            if(document) {
-                await newsFeedService.deleteFeed(req?.params?.id);
+            const deletedFeed = await NewsFeedService.deleteFeed(req?.params?.id, req?.email);
+            if(deletedFeed?.deletedCount) {
+                return setResponse(res, APP_CONSTANTS.STATUS_CODES.SUCCESS, true, false, APP_CONSTANTS.SUCCESS.FEED_DELETED, []);
             } else {
                 return setResponse(res, APP_CONSTANTS.STATUS_CODES.SUCCESS, false, true, APP_CONSTANTS.ERROR.FEED_DELETE_ERROR, []);
-            }
-            
-            return setResponse(res, APP_CONSTANTS.STATUS_CODES.SUCCESS, true, false, APP_CONSTANTS.SUCCESS.FEED_DELETED, []);
+            } 
         } catch(err) {
+            logger.info(APP_CONSTANTS.FEED_CONTROLLER.FETCH_FEED.ERROR);
             next(err);
         }
     }
@@ -88,7 +86,7 @@ const NewsFeedController: any = () => {
     const likeFeed = async (req: any, res: Response, next: NextFunction) => {
         try {
             logger.info(APP_CONSTANTS.FEED_CONTROLLER.LIKE_FEED.START);
-            const updatedDocument = await newsFeedService.likeFeed(req?.params?.id, req?.email);
+            const updatedDocument = await NewsFeedService.likeFeed(req?.params?.id, req?.email);
             if(updatedDocument) {
                 return setResponse(res, APP_CONSTANTS.STATUS_CODES.SUCCESS, true, false, APP_CONSTANTS.SUCCESS.FEED_LIKE_UPDATED, updatedDocument);
             } else {
@@ -108,20 +106,22 @@ const NewsFeedController: any = () => {
      */
     const feedComment = async (req: any, res: Response, next: NextFunction) => {
         try {
+            logger.info(APP_CONSTANTS.FEED_CONTROLLER.COMMENT_FEED.START);
             const commentData = {
                 description: req?.body?.comment,
                 commentedBy: req?.email,
                 currentTime: new Date()
             }
-            console.log(commentData);
-            const updatedDocument = await newsFeedService.feedComment(req?.params?.id,commentData);
+            const updatedDocument = await NewsFeedService.feedComment(req?.params?.id,commentData);
+            logger.info(APP_CONSTANTS.FEED_CONTROLLER.COMMENT_FEED.ENDED);
             if(updatedDocument) {
-                return setResponse(res, APP_CONSTANTS.STATUS_CODES.SUCCESS, true, false, APP_CONSTANTS.SUCCESS.FEED_LIKE_UPDATED, updatedDocument);
+                return setResponse(res, APP_CONSTANTS.STATUS_CODES.SUCCESS, true, false, APP_CONSTANTS.SUCCESS.FEED_COMMENT_UPDATED, updatedDocument);
             } else {
-                return setResponse(res, APP_CONSTANTS.STATUS_CODES.INTERNAL_SERVER_ERROR, false, true, APP_CONSTANTS.ERROR.FEED_LIKE_ERROR,[]);
+                return setResponse(res, APP_CONSTANTS.STATUS_CODES.INTERNAL_SERVER_ERROR, false, true, APP_CONSTANTS.ERROR.FEED_COMMENT_ERROR,[]);
             }
         } catch (err) {
-
+            logger.info(APP_CONSTANTS.FEED_CONTROLLER.COMMENT_FEED.ERROR);
+            next(err);
         }
     }
 

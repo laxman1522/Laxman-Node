@@ -1,6 +1,4 @@
 import { Request, Response, NextFunction } from 'express';
-import { APP_CONSTANTS, COMMENT_FIELDS } from '../constants/appContants';
-import { setResponse } from '../utils/helper';
 import Joi from 'joi';
 
 

@@ -5,8 +5,9 @@ export const APP_CONSTANTS = {
         SAVE_USER_ERROR: "Unexpected Error while trying to save the user",
         USER_ALREADY_EXISTS: "User Already Exists ",
         USER_ALREADY_REGISTERED_PENDING: "User already registered and status is still pending",
-        USER_ALREADY_REGISTERED_REJECTED: "User already registered and got rejected please try after 2 days",
-        USER_ALREADY_REREGISTERED: "User re registered successfully",
+        USER_ALREADY_REGISTERED_REJECTED: "User already registered and got rejected please try signup after 2 days from the rejected date",
+        USER_ALREADY_APPROVED: "User has been approved earlier",
+        USER_REREGISTERED: "User re registered successfully",
         CREATE_USER_ERROR: "Error Creating user",
         INTERNAL_SERVER_ERROR: "Internal Server Error",
         UNVERIFIED_USER: "User not verified yet",
@@ -23,9 +24,11 @@ export const APP_CONSTANTS = {
         FEED_FETCHING_ERROR: 'Error Happened while fetching feed data',
         NO_FEED_AVAILABLE_FOR_ID: 'No feed available for the given id' ,
         NO_FEED_AVAILABLE: 'No feed available',
-        FEED_DELETE_ERROR: 'Error occured while deleting the feed - requested Feed is not available',
+        FEED_DELETE_ERROR: 'Error occured while deleting the feed - requested Feed is not available or you are not authorised to delete the feed',
         FEED_LIKE_ERROR: 'Error occured while updating like for the given feed - requested feed is not available',
-        REJECTED: 'User has been rejected'
+        FEED_COMMENT_ERROR: 'Error occured while updating comment for the given feed - requested feed is not available',
+        REJECTED: 'User has been rejected, Please check whether the provided details are matching with CDW wallet credentials',
+        INVALID_EMAIL_EMPLOYEE_ID: 'Invalid Email or Employee Id'
     },
     SUCCESS: {
         USER_PENDING: "User registered successfully...Have to wait untill admin approve the request",
@@ -38,7 +41,8 @@ export const APP_CONSTANTS = {
         FEED_CREATED: "Feed Created Successfully",
         FEED_FETCHED: "Feed fetched successfully",
         FEED_DELETED: "Feed Deleted Successfully",
-        FEED_LIKE_UPDATED: "Feed updated successfully"
+        FEED_LIKE_UPDATED: "Feed likes updated successfully",
+        FEED_COMMENT_UPDATED: "Feed comment updated successfully"
     },
     STATUS_CODES: {
         BAD_REQUEST: 400,
@@ -56,7 +60,7 @@ export const APP_CONSTANTS = {
         COWORKER: 'coworker',
     },
     FILE_PATH: {
-        USER_ROLES: './json/userRole.json',
+        CDW_WALLET_USERS: './json/cdwWalletUsers.json',
         REMOVED_USER: './json/removedUser.json'
     },
     USER_CONTROLLER: {
@@ -96,7 +100,12 @@ export const APP_CONSTANTS = {
             START: 'Like Feed Controller Started',
             ENDED: 'Like Feed Controller ended',
             ERROR: 'Like Feed Controller error'
-        }
+        },
+        COMMENT_FEED: {
+            START: 'Comment Feed Controller Started',
+            ENDED: 'Comment Feed Controller ended',
+            ERROR: 'Comment Feed Controller error'
+        },
     },
     USER_SERVICE: {
         CREATE_USER: {
@@ -110,11 +119,21 @@ export const APP_CONSTANTS = {
             ERROR: "Login User Service error"
         },
     },
+    GENDER: {
+        MALE: 'Male',
+        FEMEALE: 'Female',
+        OTHER: 'Other'
+    },
     PROFILE_CONTROLLER: {
         FETCH_PROFILES: {
             START: "Fetch Profile controller started",
             ENDED: "Fetch Profile controller ended",
             ERROR: "Fetch Profile Controller error"
+        },
+        UPDATE_PROFILE: {
+            START: "Update Profile controller started",
+            ENDED: "Update Profile controller ended",
+            ERROR: "Update Profile Controller error"
         }
     },
     APPROVAL_STATUS:{
@@ -122,6 +141,8 @@ export const APP_CONSTANTS = {
         REJECTED: "rejected",
         PENDING: "pending"
     },
+    SWAGGER_PATH: './docs/swagger.yaml',
+    SCHEDULER_INTERVAL: "0 0 20 * * *",
     AUTHORIZATION: 'authorization',
     UNAUTHORIZED: "Unauthorized",
     INVALID_TOKEN: "Invalid Token",
@@ -131,7 +152,7 @@ export const APP_CONSTANTS = {
     },
     TOKEN_EXPIRATION: "30m",
     CDW_CONNECT_APPROVAL_STATUS: 'CDW Connect Approval Status',
-    MOCK_EMAIL: "laxmanapandi.baskaran@cdw.com"
+    MOCK_EMAIL: "laxis1598@gmail.com"
 }
 
   export const PROFILE_INFO_FIELDS = [
@@ -146,6 +167,14 @@ export const APP_CONSTANTS = {
     'workLocation',
     'employeeId'
   ];
+
+  export const REQUEST_METHODS = {
+    GET: 'GET',
+    POST: 'POST',
+    PATCH: 'PATCH',
+    DELETE: 'DELETE',
+    PUT: 'PUT'
+  }
 
   export const COMMENT_FIELDS = ['comment'];
 

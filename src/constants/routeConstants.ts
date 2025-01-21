@@ -4,8 +4,12 @@ export const ROUTE_CONSTANTS = {
     PENDING: '/pending',
     APPROVE: '/approve',
     PROFILE: '/profile',
+    PROFILE_ID: '/:employeeId',
     NEWS_FEED: '/feed',
     FEED_ID: '/:id',
     LIKES: '/likes/:id',
-    COMMENTS: '/comments/:id'
+    COMMENTS: '/comments/:id',
+    API_DOCS: '/api-docs',
+    SEARCH: '/search',
+    SEARCH_KEYWORD: '/:searchKeyword'
 }

@@ -16,10 +16,10 @@ import { userData } from '../interface/userInterface';
 const verifyAdmin = async (req: any, res: Response, next: NextFunction): Promise<any> => {
     try {
         const user: userData | null = await User.findOne({email: req?.email});
-        if(user?.role !== "admin") {
+        if(user?.role !== APP_CONSTANTS.ROLES.ADMIN) {
             return setResponse(res,APP_CONSTANTS.STATUS_CODES.FORBIDDEN,false,true, APP_CONSTANTS.ERROR.ONLY_ADMIN_ALLOWED,{})
         } 
-        next()
+        next();
     } catch(err) {
         logger.error(err);
         next(err);

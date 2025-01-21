@@ -9,10 +9,9 @@ const profileUpdateSchema = Joi.object({
   profileBio: Joi.string().optional(),
   latestWorkDesignation: Joi.string().optional(),
   certifications: Joi.array().items(Joi.string()).optional(),
-  yearsOfExperiance: Joi.number().optional(),
+  yearsOfExperience: Joi.number().optional(),
   bu: Joi.string().optional(),
   workLocation: Joi.string().optional(),
-  employeeId: Joi.string().optional(),
 }).unknown(false); // Disallow additional fields
 
 /**
@@ -23,6 +22,7 @@ const profileUpdateSchema = Joi.object({
  */
 const validateProfileUpdateFields = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
   try {
+
     // Validate the request body against the schema
     await profileUpdateSchema.validateAsync(req.body, { abortEarly: false });
     next(); // Proceed to the next middleware if validation passes

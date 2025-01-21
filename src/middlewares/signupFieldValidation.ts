@@ -6,18 +6,18 @@ import { setResponse } from '../utils/helper';
 // Define Joi schema based on the userData interface
 const userDataSchema = Joi.object({
   name: Joi.string().required(),
-  gender: Joi.string().valid("Male", "Female", "Other").required(),
+  gender: Joi.string().valid(APP_CONSTANTS.GENDER.MALE, APP_CONSTANTS.GENDER.FEMEALE, APP_CONSTANTS.GENDER.OTHER).required(),
   profilePicture: Joi.string().uri().required(),
   profileBio: Joi.string().max(500).required(),
   latestWorkDesignation: Joi.string().required(),
-  certifications: Joi.string().allow("").optional(),
-  yearsOfExperiance: Joi.string().pattern(/^\d+$/).required(), // Only numeric strings
+  certifications: Joi.array().items(Joi.string()).required(),
+  yearsOfExperience: Joi.string().pattern(/^\d+$/).required(), // Only numeric strings
   bu: Joi.string().required(),
   workLocation: Joi.string().required(),
   employeeId: Joi.number().integer().required(),
   email: Joi.string().email().required(),
   password: Joi.string().min(8).required()
-});
+}); 
 
 
 /**

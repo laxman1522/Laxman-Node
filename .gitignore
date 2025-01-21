@@ -5,3 +5,4 @@ build/
 public/
 .Ds_Store
 package-lock.json
+/coverage

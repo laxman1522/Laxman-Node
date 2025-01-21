@@ -1,4 +1,4 @@
-import express, {Router} from "express"
+import express from "express"
 import verifyToken from "../middlewares/verifyToken";
 import verifyUser from "../middlewares/verifyUser";
 import validateNewsFeedFields from "../middlewares/newsFeedFieldValidation";

@@ -71,6 +71,28 @@ paths:
           description: Forbidden. Admin access required.
         '401':
           description: Unauthorized. Token is invalid or missing.
+  /profile:
+    patch:
+      summary: Profile Update
+      description: Updating the profile information of the user
+      tags:
+        - user
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/profileUpdateRequest'
+      responses:
+        '200':
+          description: Profile successfully updated.
+        '403':
+          description: Forbidden. Admin access required.
+        '401':
+          description: Unauthorized. Token is invalid or missing.
+
 
 components:
   securitySchemes:
@@ -78,3 +100,50 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+  schemas:
+    profileUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: name to be updated
+          example: laxman
+        gender:
+          type: string
+          description: Gender of the user
+          example: Male
+        profilePicture:
+          type: string
+          format: uri
+          description: URL of the profile picture
+          example: https://example.com/profile.jpg
+        profileBio:
+          type: string
+          description: Short biography of the user
+          example: Experienced software developer specializing in full-stack development.
+        latestWorkDesignation:
+          type: string
+          description: The latest work designation of the user
+          example: Senior Developer
+        certifications:
+          type: array
+          items:
+            type: string
+          description: List of certifications
+          example:
+            - AWS Certified Developer
+            - Scrum Master Certification
+        yearsOfExperience:
+          type: number
+          description: Total years of experience
+          example: 5
+        bu:
+          type: string
+          description: Business Unit of the user
+          example: Technology
+        workLocation:
+          type: string
+          description: Work location of the user
+          example: San Francisco
+  
+
