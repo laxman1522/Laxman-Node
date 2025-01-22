@@ -45,9 +45,9 @@ export const sendEmail = (from : string, to: string, subject: string, text: stri
     // Send the email
     transporter.sendMail(mailOptions, (error: any, info: any) => {
         if (error) {
-         logger.info(APP_CONSTANTS.ERROR.ERROR_SENDING_EMAIL, error);
+         logger.error(APP_CONSTANTS.ERROR.ERROR_SENDING_EMAIL, error);
         } else {
-            logger.log(APP_CONSTANTS.SUCCESS.EMAIL_SENT, info.response);
+            logger.info(APP_CONSTANTS.SUCCESS.EMAIL_SENT, info.response);
         }
     });
 }
