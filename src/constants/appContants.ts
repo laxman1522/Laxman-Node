@@ -1,6 +1,7 @@
 export const APP_CONSTANTS = {
     SERVER_STARTED: "Server is running on port",
     MONGODB_ERROR: "Error connecting to MongoDB:",
+    SCHEDULER_STARTED: 'Scheduler started',
     ERROR: {
         SAVE_USER_ERROR: "Unexpected Error while trying to save the user",
         USER_ALREADY_EXISTS: "User Already Exists ",
@@ -28,7 +29,8 @@ export const APP_CONSTANTS = {
         FEED_LIKE_ERROR: 'Error occured while updating like for the given feed - requested feed is not available',
         FEED_COMMENT_ERROR: 'Error occured while updating comment for the given feed - requested feed is not available',
         REJECTED: 'User has been rejected, Please check whether the provided details are matching with CDW wallet credentials',
-        INVALID_EMAIL_EMPLOYEE_ID: 'Invalid Email or Employee Id'
+        INVALID_EMAIL_EMPLOYEE_ID: 'Invalid Email or Employee Id',
+        ERROR_SENDING_EMAIL: 'Error sending email: '
     },
     SUCCESS: {
         USER_PENDING: "User registered successfully...Have to wait untill admin approve the request",
@@ -42,7 +44,9 @@ export const APP_CONSTANTS = {
         FEED_FETCHED: "Feed fetched successfully",
         FEED_DELETED: "Feed Deleted Successfully",
         FEED_LIKE_UPDATED: "Feed likes updated successfully",
-        FEED_COMMENT_UPDATED: "Feed comment updated successfully"
+        FEED_COMMENT_UPDATED: "Feed comment updated successfully",
+        SCHEDULER_UPDATE: 'User table updated successfully through Scheduler -',
+        EMAIL_SENT: 'Email has been sent successfully'
     },
     STATUS_CODES: {
         BAD_REQUEST: 400,
@@ -60,8 +64,7 @@ export const APP_CONSTANTS = {
         COWORKER: 'coworker',
     },
     FILE_PATH: {
-        CDW_WALLET_USERS: './json/cdwWalletUsers.json',
-        REMOVED_USER: './json/removedUser.json'
+        CDW_WALLET_USERS: './json/cdwWalletUsers.json'
     },
     USER_CONTROLLER: {
         CREATE_USER: {
@@ -152,7 +155,7 @@ export const APP_CONSTANTS = {
     },
     TOKEN_EXPIRATION: "30m",
     CDW_CONNECT_APPROVAL_STATUS: 'CDW Connect Approval Status',
-    MOCK_EMAIL: "laxis1598@gmail.com"
+    MOCK_EMAIL: "emmy.rath@ethereal.email"
 }
 
   export const PROFILE_INFO_FIELDS = [
@@ -184,3 +187,10 @@ export const APP_CONSTANTS = {
     "email",
     "password"
   ]
+
+  export const NODE_MAIL_CREDS = {
+    HOST: 'smtp.ethereal.email',
+    PORT: 587,
+    USER: 'emmy.rath@ethereal.email',
+    PASSWORD: 'EZM8PNrGBsRmTDHBDT'
+  }

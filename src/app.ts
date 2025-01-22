@@ -7,8 +7,8 @@ import errorHandler from './middlewares/errorHandler';
 import { ROUTE_CONSTANTS } from './constants/routeConstants';
 import ProfileRoute from './routes/profileRoute';
 import FeedRoute from './routes/feedRoute';
-import { readFile, writeFile } from './services/fileService/fileService';
 import SearchRoute from './routes/searchRoute';
+import SchedulerService from './services/scheduler/schedulerService';
 const schedule = require("node-schedule");
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('js-yaml');
@@ -57,25 +57,8 @@ const swaggerDocument = YAML.load(
 app.use(ROUTE_CONSTANTS.API_DOCS, swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 
-/**
- * Scheduler logic for removing the employee details who had left the organisation
- */
-const cdwMockJsonHandler = async () => {
-
-    let cdwMockJson = await readFile(APP_CONSTANTS.FILE_PATH.CDW_WALLET_USERS);
-    
-    let removedUserList = await readFile(APP_CONSTANTS.FILE_PATH.REMOVED_USER);
-
-    removedUserList = removedUserList?.map((removedUser: any) => removedUser?.employeeId );
-
-    cdwMockJson = cdwMockJson?.filter((user: any) => !removedUserList?.includes(user?.employeeId));
-
-    writeFile(APP_CONSTANTS.FILE_PATH.CDW_WALLET_USERS, cdwMockJson);
-   
-}
-
 // Schedule the task (e.g., every day at midnight)
-schedule.scheduleJob(APP_CONSTANTS.SCHEDULER_INTERVAL, cdwMockJsonHandler);
+schedule.scheduleJob(APP_CONSTANTS.SCHEDULER_INTERVAL, SchedulerService.removeInactiveEmployee);
 
 
 
