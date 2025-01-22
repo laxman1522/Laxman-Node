@@ -6,6 +6,12 @@
     "role": "admin"
   },
   {
+    "email": "varun.subramaniam@cdw.com",
+    "name": "Varun Subramaniam",
+    "employeeId": 1843,
+    "role": "coworker"
+  },
+  {
     "email": "durga.bogoda@cdw.com",
     "name": "NVL Durga",
     "employeeId": 1227,
