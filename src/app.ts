@@ -14,7 +14,10 @@ const swaggerUi = require('swagger-ui-express');
 const YAML = require('js-yaml');
 const fs = require('fs');
 const path = require('path');
+const dotenv = require('dotenv');
 
+
+dotenv.config();
 
 const app: Express = express();
 app.use(express.json());
