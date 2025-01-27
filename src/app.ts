@@ -34,13 +34,14 @@ app.use(ROUTE_CONSTANTS.SEARCH, SearchRoute);
 // Error-handling middleware should come last
 app.use(errorHandler); 
 
+app.listen(PORT, () => {
+  logger.info(`${APP_CONSTANTS.SERVER_STARTED} ${PORT}`); 
+}); 
+
 // Function to connect to the database
 const connectToDatabase = async (): Promise<void> => {
     try {
       await mongoose.connect(MONGODB_URI);
-      app.listen(PORT, () => {
-        logger.info(`${APP_CONSTANTS.SERVER_STARTED} ${PORT}`); 
-      }); 
     } catch (error) {
       logger.info(APP_CONSTANTS.MONGODB_ERROR, error);
       process.exit(1); // Exit process with failure
