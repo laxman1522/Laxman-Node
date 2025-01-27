@@ -5,7 +5,8 @@
   "main": "app.ts",
   "scripts": {
     "test": "jest",
-    "dev": "nodemon -r dotenv/config src/app.ts"
+    "dev": "nodemon -r dotenv/config src/app.ts",
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
