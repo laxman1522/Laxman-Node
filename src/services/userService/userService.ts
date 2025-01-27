@@ -6,7 +6,7 @@ import logger from "../../logger/logger";
 import { APP_CONSTANTS } from "../../constants/appContants";
 import { user } from "../../interface/userData";
 import { sendEmail } from "../../utils/nodemailer";
-const jwt = require("jsonWebToken");
+const jwt = require("jsonwebtoken");
 
 const UserService = () => {
 
