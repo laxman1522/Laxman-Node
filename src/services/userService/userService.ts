@@ -232,8 +232,23 @@ const UserService = () => {
         }
     }
 
+    /**
+     * 
+     * @param email 
+     * @param employeeId 
+     */
+    const rejectUser = async (email: string) => {
+        try {
+            await User.updateOne({email: email },{$set:{approvalStatus: APP_CONSTANTS.APPROVAL_STATUS.REJECTED}});
+        } catch(err: any) {
+            const error: any =  new Error(APP_CONSTANTS.ERROR.APPROVAL_ERROR);
+            error.statusCode = APP_CONSTANTS.STATUS_CODES.INTERNAL_SERVER_ERROR;
+            throw error;
+        }
+    }
 
-    return{createUser, loginUser, verifyToken, fetchPendingUser, approveUser, getUpdatedTime, getExistingUser, getCdwWalletUserData, updateUser};
+
+    return{createUser, loginUser, verifyToken, fetchPendingUser, approveUser, getUpdatedTime, getExistingUser, getCdwWalletUserData, updateUser, rejectUser};
 
 }
 

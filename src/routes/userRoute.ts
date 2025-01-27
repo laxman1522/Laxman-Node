@@ -17,6 +17,6 @@ UserRoute.post(ROUTE_CONSTANTS.LOGIN,validateLoginFields, userController.loginUs
 
 UserRoute.get(ROUTE_CONSTANTS.PENDING, verifyToken, verifyAdmin, userController.fetchPendingUser);
 
-UserRoute.post(ROUTE_CONSTANTS.APPROVE, verifyToken, verifyAdmin, userController.approveUser )
+UserRoute.post(ROUTE_CONSTANTS.APPROVE, verifyToken, verifyAdmin, userController.approveRejectUser );
 
  export default UserRoute;

@@ -100,15 +100,15 @@ const UserController = () => {
        */
       const fetchPendingUser: any = async (req: any, res: Response, next: NextFunction) => {
         logger.info(APP_CONSTANTS.USER_CONTROLLER.PENDING_USER.START);
-        try {
-            const user = await userService.fetchPendingUser();
-            logger.info(APP_CONSTANTS.USER_CONTROLLER.PENDING_USER.ENDED);
-            return setResponse(res, APP_CONSTANTS.STATUS_CODES.SUCCESS, true, false, APP_CONSTANTS.SUCCESS.USER_FETCH,{user: user});
-        } catch (err: any) {
-            logger.error(APP_CONSTANTS.USER_CONTROLLER.PENDING_USER.ERROR,err);
-            next(err);
+            try {
+                const user = await userService.fetchPendingUser();
+                logger.info(APP_CONSTANTS.USER_CONTROLLER.PENDING_USER.ENDED);
+                return setResponse(res, APP_CONSTANTS.STATUS_CODES.SUCCESS, true, false, APP_CONSTANTS.SUCCESS.USER_FETCH,{user: user});
+            } catch (err: any) {
+                logger.error(APP_CONSTANTS.USER_CONTROLLER.PENDING_USER.ERROR,err);
+                next(err);
+            }
         }
-         }
 
         /**
          * 
@@ -116,7 +116,7 @@ const UserController = () => {
          * @param res 
          * @param next 
          */
-        const approveUser: any = async (req: any, res: Response, next: NextFunction) => {
+        const approveRejectUser: any = async (req: any, res: Response, next: NextFunction) => {
             logger.info(APP_CONSTANTS.USER_CONTROLLER.APPROVE_USER.START);
             try {
                 //checking whether the registered user is already present in the DB
@@ -129,13 +129,20 @@ const UserController = () => {
                 } else if(userDetails?.approvalStatus === APP_CONSTANTS.APPROVAL_STATUS.APPROVED) {
                     return setResponse(res, APP_CONSTANTS.STATUS_CODES.FORBIDDEN, false, true, APP_CONSTANTS.ERROR.USER_ALREADY_APPROVED,"");
                 } else {
-                   const user = await userService.approveUser(req.body?.email, userDetails?.employeeId);
 
-                   if(!user) {
-                     return setResponse(res, APP_CONSTANTS.STATUS_CODES.SUCCESS, false, true, APP_CONSTANTS.ERROR.REJECTED, "");
-                   } else {
-                     return setResponse(res, APP_CONSTANTS.STATUS_CODES.SUCCESS, true, false, APP_CONSTANTS.SUCCESS.USER_APPROVED, {});
-                   }
+                    if(req?.body?.isValidUser) {
+                        const user = await userService.approveUser(req.body?.email, userDetails?.employeeId);
+
+                        if(!user) {
+                            return setResponse(res, APP_CONSTANTS.STATUS_CODES.SUCCESS, false, true, APP_CONSTANTS.ERROR.REJECTED, "");
+                        } else {
+                            return setResponse(res, APP_CONSTANTS.STATUS_CODES.SUCCESS, true, false, APP_CONSTANTS.SUCCESS.USER_APPROVED, {});
+                        }
+                    } else {
+                        await userService.rejectUser(req.body?.email);
+                        return setResponse(res, APP_CONSTANTS.STATUS_CODES.SUCCESS, true, false, APP_CONSTANTS.ERROR.REJECTED_SUCCESSFULLY, "");
+                    }
+                   
                 }
                 
             } catch(err: any) {
@@ -144,7 +151,7 @@ const UserController = () => {
             }
         }
 
-    return {createUser, loginUser, fetchPendingUser, approveUser}
+    return {createUser, loginUser, fetchPendingUser, approveRejectUser}
 }
 
 export default UserController;

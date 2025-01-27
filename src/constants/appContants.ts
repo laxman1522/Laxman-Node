@@ -17,7 +17,7 @@ export const APP_CONSTANTS = {
         INVALID_PASSWORD: "Password is invalid",
         ONLY_ADMIN_ALLOWED: "Only Admin is allowed to make this request",
         INVALID_USER: 'Invalid User',
-        APPROVAL_ERROR: 'Unexpected error happened while trying to approve user',
+        APPROVAL_ERROR: 'Unexpected error happened while trying to approve/reject user',
         ERROR_FETCHING_PROFILE_INFO: 'Error while fetching profile information',
         NO_PROFILE: 'No profiles were found' ,
         PROFILE_UPDATION_FAILED: "Error occured in profile updation",
@@ -29,6 +29,7 @@ export const APP_CONSTANTS = {
         FEED_LIKE_ERROR: 'Error occured while updating like for the given feed - requested feed is not available',
         FEED_COMMENT_ERROR: 'Error occured while updating comment for the given feed - requested feed is not available',
         REJECTED: 'User has been rejected, Please check whether the provided details are matching with CDW wallet credentials',
+        REJECTED_SUCCESSFULLY: 'User has been rejected successfully',
         INVALID_EMAIL_EMPLOYEE_ID: 'Invalid Email or Employee Id',
         ERROR_SENDING_EMAIL: 'Error sending email: '
     },

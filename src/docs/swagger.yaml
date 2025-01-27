@@ -64,6 +64,9 @@ paths:
                 email:
                   type: string
                   example: "varun.subramania@gmail.com"
+                isValidUser:
+                  type: boolean
+                  example: false
       responses:
         '200':
           description: User successfully approved.
