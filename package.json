@@ -5,7 +5,7 @@
   "main": "app.ts",
   "scripts": {
     "test": "jest",
-    "start": "node dist/app.js",
+    "start": "node -r dotenv/config dist/app.js",
     "dev": "nodemon -r dotenv/config src/app.ts",
     "build": "tsc && npm run copy-swagger",
     "copy-swagger": "cp -r src/docs dist/docs"
