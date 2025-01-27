@@ -9,11 +9,14 @@ import ProfileRoute from './routes/profileRoute';
 import FeedRoute from './routes/feedRoute';
 import SearchRoute from './routes/searchRoute';
 import SchedulerService from './services/scheduler/schedulerService';
+import dotenv from 'dotenv';
 const schedule = require("node-schedule");
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('js-yaml');
 const fs = require('fs');
 const path = require('path');
+
+dotenv.config();
 
 const app: Express = express();
 app.use(express.json());
