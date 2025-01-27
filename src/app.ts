@@ -21,7 +21,7 @@ dotenv.config();
 
 const app: Express = express();
 app.use(express.json());
-const port = process.env.PORT;
+const port = process.env.PORT || 3000;
 
 //retrieving the MongoDB connection string from the .env file
 const MONGODB_URI: string = process.env.MONGODB_URI!;
